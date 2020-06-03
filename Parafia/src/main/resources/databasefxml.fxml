@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" text="Parafia" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="app.DatabaseController">
+  <content>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+         <children>
+            <Accordion layoutX="7.0" layoutY="8.0" prefHeight="548.0" prefWidth="780.0">
+              <panes>
+                <TitledPane animated="false" text="dodaj">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <GridPane layoutX="14.0" layoutY="17.0" prefHeight="27.0" prefWidth="317.0">
+                                <columnConstraints>
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <Label text="wybierz tabelę" />
+                                    <ComboBox prefHeight="26.0" prefWidth="150.0" GridPane.columnIndex="1" />
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </TitledPane>
+                <TitledPane animated="false" text="zmodyfikuj">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <GridPane prefHeight="27.0" prefWidth="317.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="wybierz tabelę" />
+                                    <ComboBox prefHeight="26.0" prefWidth="150.0" GridPane.columnIndex="1" />
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </TitledPane>
+                <TitledPane animated="false" text="wyświetl">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <GridPane prefHeight="27.0" prefWidth="317.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="wybierz tabelę" />
+                                    <ComboBox fx:id="selectComboBox" prefHeight="26.0" prefWidth="150.0" GridPane.columnIndex="1" onAction="#showSelectResult">
+                                        <items>
+                                            <FXCollections fx:factory="observableArrayList">
+                                                <String fx:value="acolytemeetings"/>
+                                                <String fx:value="acolytes"/>
+                                                <String fx:value="acolytesmasses"/>
+                                                <String fx:value="acolytesonmeetings"/>
+                                                <String fx:value="apostates"/>
+                                                <String fx:value="deaths"/>
+                                                <String fx:value="donations"/>
+                                                <String fx:value="excommunicated"/>
+                                                <String fx:value="initializationsacraments"/>
+                                                <String fx:value="initializationsacramentstypes"/>
+                                                <String fx:value="intentions"/>
+                                                <String fx:value="laybrothers"/>
+                                                <String fx:value="marriages"/>
+                                                <String fx:value="masses"/>
+                                                <String fx:value="masstypes"/>
+                                                <String fx:value="meetingtypes"/>
+                                                <String fx:value="priests"/>
+                                                <String fx:value="priestsmasses"/>
+                                            </FXCollections>
+                                        </items>
+                                    </ComboBox>
+                                 </children>
+                              </GridPane>
+                              <TableView fx:id="tableviewSelect" layoutX="14.0" layoutY="44.0" prefHeight="414.0" prefWidth="755.0">
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </TitledPane>
+              </panes>
+            </Accordion>
+         </children></AnchorPane>
+  </content>
+</TitledPane>

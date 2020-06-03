@@ -1,8 +1,11 @@
 package app;
 
 import app.MainMenuWindow;
+import database.DBConnector;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -13,11 +16,12 @@ public class Main extends Application {
     Parent root;
     public void start(Stage stage) throws Exception {
         mainMenuWindow.setUp();
-        /*root = FXMLLoader.load(getClass().getResource("/GameFXML.fxml"));
+        DBConnector.URL=MainMenuWindow.URLString;
+        DBConnector.USER=MainMenuWindow.USERString;
+        DBConnector.PASSWORD=MainMenuWindow.PASSWORDString;
+        root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
         stage.setTitle("Parafia");
         stage.setScene(new Scene(root, 1600, 900));
         stage.show();
-
-         */
     }
 }
