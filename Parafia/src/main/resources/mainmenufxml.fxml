@@ -8,13 +8,16 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
 
-
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.MainMenuWindowController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.MainMenuWindowController">
    <children>
-      <Label contentDisplay="CENTER" layoutX="245.0" layoutY="88.0" prefHeight="64.0" prefWidth="284.0" text="Baza danych parafii" />
-      <Label fx:id="display" layoutX="245.0" layoutY="152.0" prefHeight="87.0" prefWidth="311.0" text="Wprowadź nazwę bazy danych, użytkownika oraz hasło z jakim się chcesz połączyć" wrapText="true" />
-      <GridPane layoutX="245.0" layoutY="239.0">
+      <Label contentDisplay="CENTER" layoutX="417.0" layoutY="116.0" prefHeight="64.0" prefWidth="190.0" text="Parish DataBase">
+         <font>
+            <Font name="System Bold" size="19.0" />
+         </font></Label>
+      <Label fx:id="display" layoutX="401.0" layoutY="180.0" prefHeight="87.0" prefWidth="311.0" text="Connect to the database" wrapText="true" />
+      <GridPane layoutX="398.0" layoutY="281.0" prefHeight="111.0" prefWidth="229.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -28,11 +31,11 @@
             <TextField fx:id="URL" GridPane.columnIndex="1" />
             <TextField fx:id="USER" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <PasswordField fx:id="PASSWORD" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label text="Nazwa Bazy" />
-            <Label text="Użytkownik" GridPane.rowIndex="1" />
-            <Label text="Hasło" GridPane.rowIndex="2" />
+            <Label text="Database name" />
+            <Label text="User" GridPane.rowIndex="1" />
+            <Label text="Password" GridPane.rowIndex="2" />
          </children>
       </GridPane>
-      <Button fx:id="LOGINBUTTON" layoutX="270.0" layoutY="355.0" mnemonicParsing="false" prefHeight="64.0" prefWidth="151.0" text="Połącz" onAction="#login" />
+      <Button fx:id="LOGINBUTTON" layoutX="513.0" layoutY="413.0" mnemonicParsing="false" onAction="#login" prefHeight="38.0" prefWidth="114.0" text="Connect" />
    </children>
 </Pane>

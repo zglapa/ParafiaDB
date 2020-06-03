@@ -21,7 +21,7 @@ public class Main extends Application {
         DBConnector.PASSWORD=MainMenuWindow.PASSWORDString;
         root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
         stage.setTitle("Parafia");
-        stage.setScene(new Scene(root, 1600, 900));
+        stage.setScene(new Scene(root, 1024, 768));
         stage.show();
     }
 }

@@ -18,7 +18,7 @@ public class MainMenuWindow {
         stage=new Stage();
         Parent setUpRoot = FXMLLoader.load(getClass().getResource("/mainmenufxml.fxml"));
         stage.setTitle("Parafia");
-        stage.setScene(new Scene(setUpRoot, 1600, 900));
+        stage.setScene(new Scene(setUpRoot, 1024, 768));
         System.out.println(stage);
         stage.showAndWait();
     }

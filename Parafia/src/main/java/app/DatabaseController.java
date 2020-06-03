@@ -22,7 +22,7 @@ public class DatabaseController implements Initializable {
     @FXML
     TableView<ObservableList> tableviewSelect;
     @FXML
-    ComboBox<String> selectComboBox;
+    ComboBox<String> selectComboBox, insertComboBox;
     ObservableList<ObservableList> data;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -38,8 +38,7 @@ public class DatabaseController implements Initializable {
             col.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<ObservableList,String>, ObservableValue<String>>(){
                 public ObservableValue<String> call(TableColumn.CellDataFeatures<ObservableList, String> param) {
                     String s;
-                    try{
-                        s = param.getValue().get(j).toString();
+                    try{                        s = param.getValue().get(j).toString();
                     }catch (NullPointerException e){
                         s="null";
                     }
@@ -77,5 +76,8 @@ public class DatabaseController implements Initializable {
         }catch (SQLException e){
             e.printStackTrace();
         }
+    }
+
+    public void insertRecord(ActionEvent actionEvent) {
     }
 }

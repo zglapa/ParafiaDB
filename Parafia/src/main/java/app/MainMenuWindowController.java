@@ -26,7 +26,7 @@ public class MainMenuWindowController implements Initializable {
 
     public void login(ActionEvent actionEvent) {
         if(URL.getText().equals("") || USER.getText().equals("") || PASSWORD.getText().equals("")){
-            display.setText("Wpisz poprawne dane we wszystkie pola");
+            display.setText("Please type correct data to log in");
         }
         else{
             MainMenuWindow.URLString+=URL.getText();
