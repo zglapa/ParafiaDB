@@ -10,7 +10,7 @@ public class QueryExecutor {
     public static ResultSet executeSelect(String selectQuery) {
         try{
             Connection connection = DBConnector.connect();
-            Statement statement = connection.createStatement();
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
             return statement.executeQuery(selectQuery);
         }catch (SQLException e){
             throw new RuntimeException(e.getMessage());
@@ -20,7 +20,7 @@ public class QueryExecutor {
     public static void executeQuery(String query) {
         try{
             Connection connection = DBConnector.connect();
-            Statement statement = connection.createStatement();
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_UPDATABLE);
             statement.execute(query);
         }catch (SQLException e){
             throw new RuntimeException(e.getMessage());
