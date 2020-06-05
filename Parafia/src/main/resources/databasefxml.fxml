@@ -2,6 +2,7 @@
 
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
@@ -12,9 +13,13 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Rectangle?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1024.0" text="e-parish" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.DatabaseController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" text="e-parish" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.DatabaseController">
   <content>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
          <children>
@@ -81,7 +86,7 @@
                                  </rowConstraints>
                                  <children>
                                     <Label text="choose table" />
-                                    <ComboBox fx:id="updateComboBox" prefHeight="26.0" prefWidth="150.0" GridPane.columnIndex="1" onAction="#updateComboBoxValue">
+                                    <ComboBox fx:id="updateComboBox" onAction="#updateComboBoxValue" prefHeight="26.0" prefWidth="150.0" GridPane.columnIndex="1">
                                         <items>
                                             <FXCollections fx:factory="observableArrayList">
                                                 <String fx:value="acolytesmeetings" />
@@ -111,8 +116,8 @@
                               <FlowPane fx:id="updateFlowPane" layoutX="380.0" layoutY="93.0" prefHeight="480.0" prefWidth="320.0" />
                               <Label layoutX="14.0" layoutY="60.0" text="specify record" />
                               <Label layoutX="380.0" layoutY="60.0" text="set new values" />
-                              <Button fx:id="checkRecordButton" layoutX="174.0" layoutY="55.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="149.0" text="check record" onAction="#checkButtonClicked" />
-                              <Button fx:id="updateButton" layoutX="528.0" layoutY="55.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="149.0" text="update" onAction="#updateButtonClicked" />
+                              <Button fx:id="checkRecordButton" layoutX="174.0" layoutY="55.0" mnemonicParsing="false" onAction="#checkButtonClicked" prefHeight="26.0" prefWidth="149.0" text="check record" />
+                              <Button fx:id="updateButton" layoutX="528.0" layoutY="55.0" mnemonicParsing="false" onAction="#updateButtonClicked" prefHeight="26.0" prefWidth="149.0" text="update" />
                               <Label fx:id="updateLog" layoutX="14.0" layoutY="573.0" prefHeight="25.0" prefWidth="900.0" />
                            </children>
                         </AnchorPane>
@@ -122,7 +127,8 @@
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
-                              <GridPane layoutX="13.0" layoutY="28.0" prefHeight="27.0" prefWidth="317.0">
+                              <FlowPane fx:id="columnCheckBoxFlowPane" hgap="20.0" layoutX="373.0" layoutY="18.0" prefHeight="47.0" prefWidth="840.0" />
+                              <GridPane layoutX="16.0" layoutY="28.0" prefHeight="27.0" prefWidth="317.0">
                                  <columnConstraints>
                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -158,8 +164,55 @@
                                     </ComboBox>
                                  </children>
                               </GridPane>
-                              <TableView fx:id="tableviewSelect" layoutX="13.0" layoutY="73.0" prefHeight="414.0" prefWidth="950.0">
+                              <HBox layoutX="16.0" layoutY="74.0" prefHeight="26.0" prefWidth="309.0" spacing="20.0">
+                                 <children>
+                                    <Button fx:id="whereButton" mnemonicParsing="false" onAction="#whereSelectButtonClicked" prefHeight="25.0" prefWidth="85.0" text="where" />
+                                    <Button fx:id="joinButton" mnemonicParsing="false" onAction="#joinSelectButtonClicked" prefHeight="25.0" prefWidth="85.0" text="join" />
+                                    <Button fx:id="selectButton" mnemonicParsing="false" onAction="#selectButtonClicked" prefHeight="25.0" prefWidth="85.0" text="select" />
+                                 </children>
+                              </HBox>
+                              <StackPane layoutX="16.0" layoutY="116.0" prefHeight="499.0" prefWidth="1200.0">
+                                 <children>
+                                    <Pane>
+                                       <children>
+                                          <TableView fx:id="tableviewSelect" layoutY="15.0" prefHeight="414.0" prefWidth="1200.0">
                               </TableView>
+                                       </children>
+                                    </Pane>
+                                    <Pane fx:id="whereSelectPane" prefHeight="499.0" prefWidth="1200.0" visible="false">
+                                       <children>
+                                          <StackPane prefHeight="499.0" prefWidth="320.0">
+                                             <children>
+                                                <Rectangle arcHeight="50.0" arcWidth="50.0" fill="#d3d3d3" height="495.0" stroke="BLACK" strokeType="INSIDE" width="320.0" />
+                                                <FlowPane fx:id="whereSelectFP" alignment="TOP_CENTER" columnHalignment="CENTER" prefHeight="495.0" prefWidth="320.0" vgap="5.0">
+                                                   <StackPane.margin>
+                                                      <Insets top="10.0" />
+                                                   </StackPane.margin>
+                                                </FlowPane>
+                                             </children>
+                                          </StackPane>
+                                       </children>
+                                    </Pane>
+                                    <Pane fx:id="joinSelectPane" prefHeight="499.0" prefWidth="1200.0" visible="false">
+                                       <children>
+                                          <StackPane prefHeight="499.0" prefWidth="320.0">
+                                             <children>
+                                                <Rectangle arcHeight="50.0" arcWidth="50.0" fill="#d3d3d3" height="495.0" stroke="BLACK" strokeType="INSIDE" width="320.0" />
+                                                <Pane>
+                                                   <StackPane.margin>
+                                                      <Insets top="10.0" />
+                                                   </StackPane.margin>
+                                                   <children>
+                                                      <FlowPane fx:id="joinSelectFP" alignment="TOP_CENTER" columnHalignment="CENTER" layoutY="64.0" maxHeight="400.0" maxWidth="320.0" prefHeight="361.0" prefWidth="320.0" vgap="5.0" />
+                                                      <Button fx:id="addJoinButton" layoutX="118.0" layoutY="22.0" mnemonicParsing="false" onAction="#addJoinButtonClicked" prefHeight="25.0" prefWidth="85.0" text="Add join" />
+                                                   </children>
+                                                </Pane>
+                                             </children>
+                                          </StackPane>
+                                       </children>
+                                    </Pane>
+                                 </children>
+                              </StackPane>
                            </children>
                         </AnchorPane>
                   </content>
