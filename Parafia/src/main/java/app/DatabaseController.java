@@ -23,6 +23,8 @@ import java.util.ResourceBundle;
 
 public class DatabaseController implements Initializable {
 
+    @FXML ScrollPane whereScrollPane;
+    @FXML Label selectLog;
     @FXML Pane whereSelectPane,joinSelectPane;
     @FXML FlowPane whereFlowPane,updateFlowPane,insertFlowPane, columnCheckBoxFlowPane,whereSelectFP, joinSelectFP;
     @FXML Label insertLog,updateLog;
@@ -46,6 +48,14 @@ public class DatabaseController implements Initializable {
         columnCheckBoxes = new ArrayList<>();
         whereSelectFields = new ArrayList<>();
         joinBoxes = new ArrayList<>();
+        whereScrollPane.setStyle("-fx-background-color:transparent; -fx-control-inner-background: transparent;");
+        whereSelectFP.setStyle("-fx-background-color:#d3d3d3;");
+        insertButton.setDisable(true);
+        updateButton.setDisable(true);
+        checkRecordButton.setDisable(true);
+        whereButton.setDisable(true);
+        selectButton.setDisable(true);
+        joinButton.setDisable(true);
     }
     private void changeTable(ResultSet rs) throws SQLException {
         tableviewSelect.getItems().clear();
@@ -128,6 +138,10 @@ public class DatabaseController implements Initializable {
         if(where!=null && !where.equals("")){
             selectToExecute.append(" where ").append(where);
         }
+        if(selectToExecute.indexOf(";") >=0){
+            selectLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+            return;
+        }
         selectToExecute.append(" order by 1;");
         System.out.println(selectToExecute.toString());
         try {
@@ -138,8 +152,10 @@ public class DatabaseController implements Initializable {
             changeTable(result);
             addRows(result);
             tableviewSelect.setItems(data);
+            selectLog.setText("Select successfull");
         }catch (Exception e){
             e.printStackTrace();
+            selectLog.setText("Select unsuccessful");
         }
     }
     public void showSelectResult(ActionEvent actionEvent) {
@@ -147,12 +163,16 @@ public class DatabaseController implements Initializable {
         executeSelect(select,selectComboBox.getValue(), true,null,null);
         whereSelectPane.setVisible(false);
         joinSelectPane.setVisible(false);
+        whereButton.setDisable(false);
+        joinButton.setDisable(false);
+        selectButton.setDisable(false);
     }
     private void changeFlowPane(ResultSetMetaData tableData) throws SQLException {
         insertFlowPane.getChildren().clear();
         insertFields.clear();
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
             InsertField insertField = new InsertField(tableData.getColumnName(i));
+
             insertFlowPane.getChildren().add(insertField.block);
             insertFields.add(insertField);
         }
@@ -162,7 +182,18 @@ public class DatabaseController implements Initializable {
         try{
             ResultSet table = QueryExecutor.executeSelect("select * from " + tableName+";");
             ResultSetMetaData tableMetaData = table.getMetaData();
-            changeFlowPane(tableMetaData);
+            StringBuilder select = new StringBuilder("select ");
+            for(int i = 1;i <= tableMetaData.getColumnCount(); ++i){
+                if(!tableMetaData.getColumnTypeName(i).equals("serial")){
+                    select.append(tableMetaData.getColumnName(i));
+                    select.append(",");
+                }
+            }
+            select.delete(select.length()-1,select.length());
+            select.append(" from ").append(tableName).append(";");
+            ResultSetMetaData resultSetMetaData = QueryExecutor.executeSelect(select.toString()).getMetaData();
+            changeFlowPane(resultSetMetaData);
+            insertButton.setDisable(false);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -188,20 +219,39 @@ public class DatabaseController implements Initializable {
             if(insertField.textField.getText().equals("")) return;
         }
         StringBuilder insert = new StringBuilder("insert into ");
-        insert.append(insertComboBox.getValue()).append(" values (");
-        int i=1;
-        for(InsertField insertField : insertFields){
-            insert.append("'").append(insertField.textField.getText()).append("'");
-            i++;
-            if(i <= insertFields.size()) insert.append(",");
-        }
-        insert.append(");");
-        System.out.println(insert.toString());
+        insert.append(insertComboBox.getValue()).append(" (");
         try{
-            insertIntoTable(insert.toString(), insertComboBox.getValue());
+            ResultSetMetaData resultSetMetaData = QueryExecutor.executeSelect("select * from " + insertComboBox.getValue() + ";").getMetaData();
+            for(int i = 1; i <= resultSetMetaData.getColumnCount(); ++i){
+                if(!resultSetMetaData.getColumnTypeName(i).equals("serial")){
+                    insert.append(resultSetMetaData.getColumnName(i));
+                    insert.append(",");
+                }
+            }
+            insert.delete(insert.length()-1, insert.length());
+            insert.append(")");
+            insert.append(" values (");
+            int i=1;
+            for(InsertField insertField : insertFields){
+                insert.append("'").append(insertField.textField.getText()).append("'");
+                i++;
+                if(i <= insertFields.size()) insert.append(",");
+            }
+            if(insert.indexOf(";") >=0){
+                insertLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+                return;
+            }
+            insert.append(");");
+            System.out.println(insert.toString());
+            try{
+                insertIntoTable(insert.toString(), insertComboBox.getValue());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
+
     }
 
     private void changeUpdateFlowPane(ResultSetMetaData tableData) throws SQLException {
@@ -210,6 +260,10 @@ public class DatabaseController implements Initializable {
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
             InsertField insertField = new InsertField(tableData.getColumnName(i));
             updateFlowPane.getChildren().add(insertField.block);
+            System.out.println(tableData.getColumnTypeName(i));
+            if(tableData.getColumnTypeName(i).equals("serial")){
+                insertField.textField.setEditable(false);
+            }
             updateFields.add(insertField);
         }
     }
@@ -252,11 +306,16 @@ public class DatabaseController implements Initializable {
             }
         }
         query.delete(query.length()-5,query.length()-1);
+        if(query.indexOf(";") >=0){
+            updateLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+            return;
+        }
         query.append(";");
         System.out.println(query.toString());
         try{
             QueryExecutor.executeQuery(query.toString());
             updateLog.setText("Update successful");
+            updateButton.setDisable(true);
         }catch (Exception e){
             e.printStackTrace();
             updateLog.setText("Update unsuccessful");
@@ -276,6 +335,10 @@ public class DatabaseController implements Initializable {
             }
         }
         query.delete(query.length()-5,query.length()-1);
+        if(query.indexOf(";") >=0){
+            updateLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+            return;
+        }
         query.append(";");
         System.out.println(query.toString());
         try {
@@ -291,6 +354,7 @@ public class DatabaseController implements Initializable {
                 changeUpdateFlowPane(resultSet.getMetaData());
                 resultSet.first();
                 fillUpdateFields(resultSet);
+                updateButton.setDisable(false);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -303,6 +367,8 @@ public class DatabaseController implements Initializable {
             ResultSet table = QueryExecutor.executeSelect("select * from " + tableName+";");
             ResultSetMetaData tableMetaData = table.getMetaData();
             changeWhereFlowPane(tableMetaData);
+            checkRecordButton.setDisable(false);
+            updateButton.setDisable(true);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -321,9 +387,17 @@ public class DatabaseController implements Initializable {
         joinSelectPane.setVisible(false);
         if(whereSelectPane.isVisible()){
             whereSelectPane.setVisible(false);
-        }else {
+        }else if(selectComboBox.getValue()!=null){
             StringBuilder helpQuery = new StringBuilder("select * from ");
             helpQuery.append(selectComboBox.getValue());
+            if(joinBoxes.size()>0 && joinBoxes.get(0).tableComboBox.getValue()!=null && joinBoxes.get(0).columnComboBoxLeft.getValue()!=null && joinBoxes.get(0).columnComboBoxRight.getValue()!=null){
+                helpQuery.append(" l ");
+                helpQuery.append(" join ");
+                helpQuery.append(joinBoxes.get(0).tableComboBox.getValue());
+                helpQuery.append(" p ");
+                helpQuery.append(" on ");
+                helpQuery.append("l.").append(joinBoxes.get(0).columnComboBoxLeft.getValue()).append("=").append("p.").append(joinBoxes.get(0).columnComboBoxRight.getValue());
+            }
             helpQuery.append(";");
             try {
                 ResultSet resultSet = QueryExecutor.executeSelect(helpQuery.toString());
@@ -335,19 +409,6 @@ public class DatabaseController implements Initializable {
     }
 
     public void selectButtonClicked(ActionEvent actionEvent) {
-        StringBuilder where = new StringBuilder("");
-        for(WhereField whereField : whereSelectFields){
-            if(!whereField.textField.getText().equals("")){
-                where.append(whereField.label.getText());
-                where.append(whereField.comboBox.getValue());
-                where.append("'");
-                where.append(whereField.textField.getText());
-                where.append("'");
-                where.append(" and ");
-            }
-        }
-        if(where.length() > 4)
-            where.delete(where.length()-4,where.length());
         StringBuilder join = new StringBuilder("");
         for(JoinBox joinBox : joinBoxes){
             if(!joinBox.columnComboBoxLeft.getValue().equals("") && !joinBox.columnComboBoxRight.getValue().equals("") ){
@@ -373,7 +434,23 @@ public class DatabaseController implements Initializable {
                 e.printStackTrace();
             }
         }
-        int i=1;
+        int i = 1;
+        StringBuilder where = new StringBuilder("");
+        for(WhereField whereField : whereSelectFields){
+            if(!whereField.textField.getText().equals("")){
+                where.append((i<=columnsLNumber)?"l.":"p.");
+                where.append(whereField.label.getText());
+                where.append(whereField.comboBox.getValue());
+                where.append("'");
+                where.append(whereField.textField.getText());
+                where.append("'");
+                where.append(" and ");
+            }
+            i++;
+        }
+        if(where.length() > 4)
+            where.delete(where.length()-4,where.length());
+        i=1;
         for(ColumnCheckBox columnCheckBox : columnCheckBoxes){
             if(columnCheckBox.checkBox.isSelected()){
                 columns.append((i<=columnsLNumber)?"l.":"p.");

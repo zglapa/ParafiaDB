@@ -18,11 +18,11 @@ public class Main extends Application {
     }
     Parent root;
     public void start(Stage stage) throws Exception {
-        //mainMenuWindow.setUp();
+        mainMenuWindow.setUp();
         //TEMPORARY DELETE BEFORE PRESENTATION
-        MainMenuWindow.URLString=URL;
+        /*MainMenuWindow.URLString=URL;
         MainMenuWindow.USERString=USER;
-        MainMenuWindow.PASSWORDString=PASSWORD;
+        MainMenuWindow.PASSWORDString=PASSWORD;*/
         //------------------------------------------//
 
         DBConnector.URL=MainMenuWindow.URLString;
