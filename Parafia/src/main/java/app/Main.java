@@ -8,6 +8,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.util.Map;
+
+import static javafx.application.Platform.exit;
+
 public class Main extends Application {
     private static MainMenuWindow mainMenuWindow=new MainMenuWindow();;
     public static String URL="jdbc:postgresql://localhost/zofia";
@@ -18,11 +22,12 @@ public class Main extends Application {
     }
     Parent root;
     public void start(Stage stage) throws Exception {
-        mainMenuWindow.setUp();
+        /*mainMenuWindow.setUp();
+        if(MainMenuWindow.action==0) return;*/
         //TEMPORARY DELETE BEFORE PRESENTATION
-        /*MainMenuWindow.URLString=URL;
+        MainMenuWindow.URLString=URL;
         MainMenuWindow.USERString=USER;
-        MainMenuWindow.PASSWORDString=PASSWORD;*/
+        MainMenuWindow.PASSWORDString=PASSWORD;
         //------------------------------------------//
 
         DBConnector.URL=MainMenuWindow.URLString;
@@ -33,4 +38,5 @@ public class Main extends Application {
         stage.setScene(new Scene(root, 1280, 800));
         stage.show();
     }
+
 }

@@ -1,5 +1,6 @@
 package app;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,6 +22,7 @@ public class MainMenuWindowController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         MainMenuWindow.URLString="jdbc:postgresql://localhost/";
+        MainMenuWindow.action=0;
     }
 
 
@@ -32,6 +34,7 @@ public class MainMenuWindowController implements Initializable {
             MainMenuWindow.URLString+=URL.getText();
             MainMenuWindow.USERString=USER.getText();
             MainMenuWindow.PASSWORDString=PASSWORD.getText();
+            MainMenuWindow.action=1;
             MainMenuWindow.stage.close();
         }
     }

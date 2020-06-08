@@ -1,5 +1,7 @@
 package app;
 
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -22,4 +24,5 @@ public class MainMenuWindow {
         System.out.println(stage);
         stage.showAndWait();
     }
+
 }
