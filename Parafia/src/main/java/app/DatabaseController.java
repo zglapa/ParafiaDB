@@ -60,6 +60,10 @@ public class DatabaseController implements Initializable {
         whereButton.setDisable(true);
         selectButton.setDisable(true);
         joinButton.setDisable(true);
+        Tooltip customSelectTooltip = new Tooltip("click to enter custom select query");
+        customSelectTooltip.setShowDelay(new Duration(500));
+        customSelectTooltip.setHideDelay(Duration.ZERO);
+        customSelectTooltip.setShowDuration(Duration.INDEFINITE);
         Tooltip whereTooltip = new Tooltip("click to add where clause");
         whereTooltip.setShowDelay(new Duration(500));
         whereTooltip.setHideDelay(Duration.ZERO);
@@ -279,7 +283,13 @@ public class DatabaseController implements Initializable {
         whereSelectFields.clear();
         whereSelectFP.getChildren().clear();
         whereSelectPane.setVisible(true);
+        String tableName="";
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
+            if(!tableName.equals(tableData.getTableName(i))){
+                tableName=tableData.getTableName(i);
+                Label tableSeparator = new Label("--" + tableName.toUpperCase() + "--");
+                whereSelectFP.getChildren().add(tableSeparator);
+            }
             WhereField whereField = new WhereField(tableData.getColumnName(i));
             whereSelectFP.getChildren().add(whereField.block);
             whereSelectFields.add(whereField);
@@ -378,10 +388,16 @@ public class DatabaseController implements Initializable {
             return;
         }
         clearButtonClicked(actionEvent);
+        selectLog.setText("Warning : this may be potentially harmful to the database - use with caution");
         customSQPane.setVisible(true);
     }
     public void customSelectButtonClicked(ActionEvent actionEvent) {
         String select = customSelectArea.getText();
+        if(select.equals("")){
+            selectLog.setText("Query must not be empty");
+            showCustomSelectPane(actionEvent);
+            return;
+        }
         if(select.indexOf(';') != select.length()-1) {
             selectLog.setText("Character ';' has to be at the end of the query");
             showCustomSelectPane(actionEvent);
@@ -453,7 +469,7 @@ public class DatabaseController implements Initializable {
     public void insertButtonClicked(ActionEvent actionEvent) {
         insertLog.setText("");
         for(InsertField insertField : insertFields){
-            if(insertField.textField.getText().equals("")) return;
+            if(insertField.textField.getText().equals("") && insertField.mandatory) return;
         }
         StringBuilder insert = new StringBuilder("insert into ");
         insert.append(insertComboBox.getValue()).append(" (");
@@ -470,12 +486,15 @@ public class DatabaseController implements Initializable {
             insert.append(" values (");
             int i=1;
             for(InsertField insertField : insertFields){
-                insert.append("'").append(insertField.textField.getText()).append("'");
+                if(insertField.textField.getText().equals("")){
+                    insert.append("null");
+                }
+                else insert.append("'").append(insertField.textField.getText()).append("'");
                 i++;
                 if(i <= insertFields.size()) insert.append(",");
             }
             if(insert.indexOf(";") >=0){
-                insertLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+                insertLog.setText("Character ';' is not allowed as value - visit https://xkcd.com/327/ ");
                 return;
             }
             insert.append(");");
@@ -497,6 +516,12 @@ public class DatabaseController implements Initializable {
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
             InsertField insertField = new InsertField(tableData.getColumnName(i));
             updateFlowPane.getChildren().add(insertField.block);
+            if(tableData.isNullable(i)==ResultSetMetaData.columnNoNulls){
+                insertField.setMandatory(true);
+                insertField.label.setTooltip(mandatoryTooltip);
+            }else{
+                insertField.label.setTooltip(optionalTooltip);
+            }
             System.out.println(tableData.getColumnTypeName(i));
             if(tableData.getColumnTypeName(i).equals("serial")){
                 insertField.textField.setEditable(false);
@@ -514,6 +539,7 @@ public class DatabaseController implements Initializable {
         updateFlowPane.getChildren().clear();
         updateFields.clear();
         whereFields.clear();
+        String tableName="";
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
             InsertField insertField = new InsertField(tableData.getColumnName(i));
             whereFlowPane.getChildren().add(insertField.block);
@@ -544,7 +570,7 @@ public class DatabaseController implements Initializable {
         }
         query.delete(query.length()-5,query.length()-1);
         if(query.indexOf(";") >=0){
-            updateLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+            updateLog.setText("Character ';' is not allowed as value - visit https://xkcd.com/327/ ");
             return;
         }
         query.append(";");
@@ -572,7 +598,7 @@ public class DatabaseController implements Initializable {
         }
         query.delete(query.length()-5,query.length()-1);
         if(query.indexOf(";") >=0){
-            updateLog.setText("Haha... trying to be funny? - visit https://xkcd.com/327/ ");
+            updateLog.setText("Character ';' is not allowed as value - visit https://xkcd.com/327/ ");
             return;
         }
         query.append(";");

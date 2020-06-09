@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class MainMenuWindow {
-    public static String URLString;
+    public static String URLString="jdbc:postgresql://localhost/";
     public static String USERString;
     public static String PASSWORDString;
     public static int action;

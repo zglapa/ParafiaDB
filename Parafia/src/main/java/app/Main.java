@@ -22,17 +22,14 @@ public class Main extends Application {
     }
     Parent root;
     public void start(Stage stage) throws Exception {
-        /*mainMenuWindow.setUp();
-        if(MainMenuWindow.action==0) return;*/
-        //TEMPORARY DELETE BEFORE PRESENTATION
-        MainMenuWindow.URLString=URL;
-        MainMenuWindow.USERString=USER;
-        MainMenuWindow.PASSWORDString=PASSWORD;
-        //------------------------------------------//
 
-        DBConnector.URL=MainMenuWindow.URLString;
-        DBConnector.USER=MainMenuWindow.USERString;
-        DBConnector.PASSWORD=MainMenuWindow.PASSWORDString;
+        //TEMPORARY DELETE BEFORE PRESENTATION
+        /*MainMenuWindow.URLString=URL;
+        MainMenuWindow.USERString=USER;
+        MainMenuWindow.PASSWORDString=PASSWORD;*/
+        //------------------------------------------//
+        mainMenuWindow.setUp();
+        if(MainMenuWindow.action==0) return;
         root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
         stage.setTitle("Parafia");
         stage.setScene(new Scene(root, 1280, 800));

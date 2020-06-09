@@ -1,5 +1,7 @@
 package app;
 
+import database.DBConnector;
+import database.QueryExecutor;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,6 +36,17 @@ public class MainMenuWindowController implements Initializable {
             MainMenuWindow.URLString+=URL.getText();
             MainMenuWindow.USERString=USER.getText();
             MainMenuWindow.PASSWORDString=PASSWORD.getText();
+            DBConnector.URL=MainMenuWindow.URLString;
+            DBConnector.USER=MainMenuWindow.USERString;
+            DBConnector.PASSWORD=MainMenuWindow.PASSWORDString;
+            try {
+                QueryExecutor.executeSelect("select 1;");
+            }catch (RuntimeException r){
+                display.setText("Connection failed - please check your input");
+                MainMenuWindow.URLString="jdbc:postgresql://localhost/";
+                return;
+            }
+
             MainMenuWindow.action=1;
             MainMenuWindow.stage.close();
         }
