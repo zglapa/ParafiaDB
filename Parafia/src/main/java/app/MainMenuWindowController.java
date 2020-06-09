@@ -11,7 +11,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 
 import java.net.URL;
@@ -31,7 +33,13 @@ public class MainMenuWindowController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         MainMenuWindow.URLString="jdbc:postgresql://localhost/";
         MainMenuWindow.action=0;
-        backgroundPane.setStyle("-fx-background-color: AZURE");
+        LOGINBUTTON.setStyle("-fx-background-color: AZURE");
+        backgroundPane.setStyle("-fx-background-color: LIGHTGRAY");
+        try {
+            imageRectangle.setFill(new ImagePattern(new Image(getClass().getResource("/image.png").toURI().toString()),0,0,1,1,true));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 

@@ -15,14 +15,14 @@
    <children>
       <Label alignment="CENTER" contentDisplay="CENTER" layoutX="157.0" layoutY="192.0" prefHeight="104.0" prefWidth="544.0" text="Parish Database" textAlignment="CENTER">
          <font>
-            <Font name="System Bold" size="64.0" />
+            <Font name="System Bold" size="48.0" />
          </font>
       </Label>
       <Label fx:id="display" alignment="CENTER" layoutX="193.0" layoutY="324.0" prefHeight="38.0" prefWidth="472.0" text="Connect to the database:" wrapText="true">
          <font>
-            <Font size="24.0" />
+            <Font size="20.0" />
          </font></Label>
-      <GridPane layoutX="255.0" layoutY="391.0" prefHeight="163.0" prefWidth="344.0">
+      <GridPane layoutX="225.0" layoutY="391.0" prefHeight="163.0" prefWidth="374.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -35,34 +35,34 @@
          <children>
             <TextField fx:id="URL" GridPane.columnIndex="1">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></TextField>
             <TextField fx:id="USER" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></TextField>
             <PasswordField fx:id="PASSWORD" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></PasswordField>
             <Label text="Database name">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></Label>
             <Label text="User name" GridPane.rowIndex="1">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></Label>
             <Label text="Password" GridPane.rowIndex="2">
                <font>
-                  <Font size="24.0" />
+                  <Font size="22.0" />
                </font></Label>
          </children>
       </GridPane>
-      <Button fx:id="LOGINBUTTON" layoutX="427.0" layoutY="554.0" mnemonicParsing="false" onAction="#login" prefHeight="51.0" prefWidth="172.0" text="Connect">
+      <Button fx:id="LOGINBUTTON" layoutX="412.0" layoutY="584.0" mnemonicParsing="false" onAction="#login" prefHeight="51.0" prefWidth="187.0" text="Connect">
          <font>
-            <Font size="24.0" />
+            <Font size="22.0" />
          </font></Button>
-      <Rectangle fx:id="imageRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="300.0" layoutX="824.0" layoutY="284.0" stroke="BLACK" strokeType="INSIDE" width="300.0" />
+      <Rectangle fx:id="imageRectangle" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="340.0" layoutX="828.0" layoutY="244.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="291.0" />
    </children>
 </Pane>

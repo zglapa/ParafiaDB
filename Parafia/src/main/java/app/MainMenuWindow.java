@@ -22,7 +22,7 @@ public class MainMenuWindow {
     public void setUp() throws IOException {
         stage=new Stage();
         Parent setUpRoot = FXMLLoader.load(getClass().getResource("/mainmenufxml.fxml"));
-        stage.setTitle("Parafia");
+        stage.setTitle("ParishDB");
         stage.setScene(new Scene(setUpRoot, 1280, 800));
         System.out.println(stage);
         stage.showAndWait();
