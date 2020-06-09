@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
 import javafx.util.Duration;
 
@@ -20,10 +21,15 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 
 public class DatabaseController implements Initializable {
 
+    @FXML StackPane usefulPane;
+    @FXML ListView<String> listView;
+    @FXML Button usefulExecuteButton;
+    @FXML Button usefulButton;
     @FXML TextArea customSelectArea;
     @FXML ScrollPane whereScrollPane;
     @FXML Label selectLog;
@@ -42,6 +48,7 @@ public class DatabaseController implements Initializable {
     ArrayList<ColumnCheckBox> columnCheckBoxes;
     ArrayList<WhereField> whereSelectFields;
     ArrayList<JoinBox> joinBoxes;
+    HashMap<String,String> usefulSelects;
     Tooltip mandatoryTooltip;
     Tooltip optionalTooltip;
     @Override
@@ -92,7 +99,9 @@ public class DatabaseController implements Initializable {
         optionalTooltip.setShowDelay(new Duration(500));
         optionalTooltip.setHideDelay(Duration.ZERO);
         optionalTooltip.setShowDuration(Duration.INDEFINITE);
+        populateListView();
     }
+
     //  TABLEVIEW MANAGEMENT
     private void changeTable(ResultSet rs) throws SQLException {
         tableviewSelect.getItems().clear();
@@ -200,6 +209,7 @@ public class DatabaseController implements Initializable {
     }
     private void executeCustomSelect(String select){
         try{
+            System.out.println(select);
             ResultSet result = QueryExecutor.executeSelect(select);
             data = FXCollections.observableArrayList();
             changeTable(result);
@@ -207,6 +217,7 @@ public class DatabaseController implements Initializable {
             tableviewSelect.setItems(data);
             selectLog.setText("Select successfull");
         }catch (Exception e){
+            e.printStackTrace();
             selectLog.setText("Select unsuccessful");
         }
     }
@@ -637,4 +648,22 @@ public class DatabaseController implements Initializable {
     }
 
 
+    public void usefulExecuteButtonClicked(ActionEvent actionEvent) {
+        usefulPane.setVisible(false);
+        clearButtonClicked(actionEvent);
+        String select = usefulSelects.get(listView.getSelectionModel().getSelectedItem());
+        if(select != null)
+        executeCustomSelect(select);
+    }
+
+    public void usefulButtonClicked(ActionEvent actionEvent) {
+        usefulPane.setVisible(!usefulPane.isVisible());
+    }
+    private void populateListView(){
+        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        usefulSelects = new HashMap<>();
+        UsefulSelect sel = new UsefulSelect("Parents info","select person.id, person.forename,person.surname,person.gender,person.isparishioner,person.dateofbirth,person.motherid,mother.forename,mother.surname,mother.dateofbirth,person.fatherid,father.forename,father.surname,father.dateofbirth from laybrothers person join laybrothers mother on person.motherid=mother.id join laybrothers father on person.fatherid=father.id;");
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
+    }
 }
