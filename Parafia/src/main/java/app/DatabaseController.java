@@ -672,6 +672,30 @@ public class DatabaseController implements Initializable {
         UsefulSelect sel = new UsefulSelect("Parents info","select person.id, person.forename,person.surname,person.gender,person.isparishioner,person.dateofbirth,person.motherid,mother.forename,mother.surname,mother.dateofbirth,person.fatherid,father.forename,father.surname,father.dateofbirth from laybrothers person join laybrothers mother on person.motherid=mother.id join laybrothers father on person.fatherid=father.id;");
         usefulSelects.put(sel.name,sel.select);
         listView.getItems().add(sel.name);
+        sel.name="Top priests in terms of number of masses";
+        sel.select="SELECT forename || ' ' || surname AS \"Priest\", count(massid) AS \"Number of masses\" FROM priestsmasses left join priests p on priestsmasses.priestid = p.id GROUP BY 1 ORDER BY 2 DESC;";
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
+
+        sel.name="Top acolytes in terms of number of masses";
+        sel.select="SELECT forename || ' ' || surname AS \"Acolyte\", count(massid) AS \"Number of masses\" FROM acolytesmasses left join acolytes a on acolytesmasses.acolyteid = a.id left join laybrothers l on a.laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
+
+        sel.name="Most faithful laybrothers";
+        sel.select="SELECT forename || ' ' || surname AS \"Laybrother\", sum(amount) AS \"Money donated\" FROM donations left join laybrothers l on laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
+
+        sel.name="Most romantic masstypes";
+        sel.select="SELECT type AS \"Type of mass\", count(marriages.id) AS \"Number of married couples\" FROM marriages left join masses a on marriages.massid = a.massid left join masstypes t on a.masstype = t.id GROUP BY 1 ORDER BY 2 DESC;";
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
+
+        sel.name="Average age on acolytes meetings";
+        sel.select="SELECT meetingtypes.meetingtype AS \"Type of meeting\", count(l.dateofbirth) AS \"Number of acolytes\", round(sum(EXTRACT(YEAR FROM AGE(now(), l.dateofbirth)))/count(l.dateofbirth)) AS \"Average age\" FROM meetingtypes left join acolytemeetings m on m.meetingtype = meetingtypes.id left join acolytesonmeetings o on o.meetingid = m.id left join acolytes a on o.acolyteid = a.id left join laybrothers l on l.id = a.laybrotherid GROUP BY 1 ORDER BY 2 DESC;";
+        usefulSelects.put(sel.name,sel.select);
+        listView.getItems().add(sel.name);
         sel.name="Godparents info";
         sel.select="select * from laybrothers person join laybrothers gmother on person.godmotherid=gmother.id join laybrothers gfather on person.godfatherid=gfather.id;";
         usefulSelects.put(sel.name,sel.select);
@@ -820,34 +844,6 @@ public class DatabaseController implements Initializable {
         sel.select="select i2.sacramenttype ,count(i.id) from initializationsacraments i join initializationsacramentstypes i2 on i.sacramenttype = i2.id group by i2.sacramenttype;";
         usefulSelects.put(sel.name,sel.select);
         listView.getItems().add(sel.name);
-        sel.name="Top priests in terms of number of masses";
-        sel.select="SELECT forename || ' ' || surname AS \"Priest\", count(massid) AS \"Number of masses\" FROM priestsmasses left join priests p on priestsmasses.priestid = p.id GROUP BY 1 ORDER BY 2 DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-
-        sel.name="Top acolytes in terms of number of masses";
-        sel.select="SELECT forename || ' ' || surname AS \"Acolyte\", count(massid) AS \"Number of masses\" FROM acolytesmasses left join acolytes a on acolytesmasses.acolyteid = a.id left join laybrothers l on a.laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-
-        sel.name="Most faithful laybrothers";
-        sel.select="SELECT forename || ' ' || surname AS \"Laybrother\", sum(amount) AS \"Money donated\" FROM donations left join laybrothers l on laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-
-        sel.name="Most romantic masstypes";
-        sel.select="SELECT type AS \"Type of mass\", count(marriages.id) AS \"Number of married couples\" FROM marriages left join masses a on marriages.massid = a.massid left join masstypes t on a.masstype = t.id GROUP BY 1 ORDER BY 2 DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-
-        sel.name="Average age on acolytes meetings";
-        sel.select="SELECT meetingtypes.meetingtype AS \"Type of meeting\", count(l.dateofbirth) AS \"Number of acolytes\", round(sum(EXTRACT(YEAR FROM AGE(now(), l.dateofbirth)))/count(l.dateofbirth)) AS \"Average age\" FROM meetingtypes left join acolytemeetings m on m.meetingtype = meetingtypes.id left join acolytesonmeetings o on o.meetingid = m.id left join acolytes a on o.acolyteid = a.id left join laybrothers l on l.id = a.laybrotherid GROUP BY 1 ORDER BY 2 DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-
-
-
-
 
     }
 }
