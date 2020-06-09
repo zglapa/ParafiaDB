@@ -434,6 +434,63 @@ language plpgsql;
 CREATE TRIGGER checkpriestmassdate BEFORE INSERT OR UPDATE ON priestsmasses
 FOR EACH ROW EXECUTE PROCEDURE priestmassdate();
  
+
+--no deletions
+CREATE RULE acolytemeetingsdel AS ON DELETE TO acolytemeetings
+DO INSTEAD NOTHING;
+
+CREATE RULE acolytesdel AS ON DELETE TO acolytes
+DO INSTEAD NOTHING;
+
+CREATE RULE acolytesmassesdel AS ON DELETE TO acolytesmasses
+DO INSTEAD NOTHING;
+
+CREATE RULE acolytesonmeetingsdel AS ON DELETE TO acolytesonmeetings
+DO INSTEAD NOTHING;
+
+CREATE RULE apostatesdel AS ON DELETE TO apostates
+DO INSTEAD NOTHING;
+
+CREATE RULE deathsdel AS ON DELETE TO deaths
+DO INSTEAD NOTHING;
+
+CREATE RULE donationsdel AS ON DELETE TO donations
+DO INSTEAD NOTHING;
+
+CREATE RULE excommunicateddel AS ON DELETE TO excommunicated
+DO INSTEAD NOTHING;
+
+CREATE RULE initializationsacramentsdel AS ON DELETE TO initializationsacraments
+DO INSTEAD NOTHING;
+
+CREATE RULE initializationsacramentstypesdel AS ON DELETE TO initializationsacramentstypes
+DO INSTEAD NOTHING;
+
+CREATE RULE intentionsdel AS ON DELETE TO intentions
+DO INSTEAD NOTHING;
+
+CREATE RULE laybrothersdel AS ON DELETE TO laybrothers
+DO INSTEAD NOTHING;
+
+CREATE RULE marriagesdel AS ON DELETE TO marriages
+DO INSTEAD NOTHING;
+
+CREATE RULE massesdel AS ON DELETE TO masses
+DO INSTEAD NOTHING;
+
+CREATE RULE masstypesdel AS ON DELETE TO masstypes
+DO INSTEAD NOTHING;
+
+CREATE RULE meetingtypesdel AS ON DELETE TO meetingtypes
+DO INSTEAD NOTHING;
+
+CREATE RULE priestsdel AS ON DELETE TO priests
+DO INSTEAD NOTHING;
+
+CREATE RULE priestsmassesdel AS ON DELETE TO priestsmasses
+DO INSTEAD NOTHING;
+
+
 --insert laybrothers
 INSERT INTO laybrothers(forename,surname,gender,isparishioner,dateofbirth,motherid,fatherid,godfatherid,godmotherid) VALUES
  ( 'name76', 'surname11', 'F', true, '1989-04-25', NULL, NULL ,NULL, NULL),
