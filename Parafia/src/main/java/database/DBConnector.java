@@ -15,7 +15,7 @@ public class DBConnector {
             connection = DriverManager.getConnection(URL,USER,PASSWORD);
             System.out.println("connected");
         }catch (SQLException e){
-            e.printStackTrace();
+            throw new RuntimeException(e.getCause());
         }
         return connection;
     }
