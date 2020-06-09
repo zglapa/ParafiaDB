@@ -434,6 +434,7 @@ language plpgsql;
 CREATE TRIGGER checkpriestmassdate BEFORE INSERT OR UPDATE ON priestsmasses
 FOR EACH ROW EXECUTE PROCEDURE priestmassdate();
  
+
 --check intialization sacraments
 CREATE OR REPLACE FUNCTION checkinisacins() RETURNS TRIGGER AS
 $checkinisacins$
@@ -453,6 +454,48 @@ language plpgsql;
 
 CREATE TRIGGER ckechinitializationsacraments AFTER INSERT ON initializationsacraments
 FOR EACH ROW EXECUTE PROCEDURE checkinisacins();
+
+--check acolytes on meetings
+CREATE OR REPLACE FUNCTION checkacoonmeetings() RETURNS TRIGGER AS 
+$checkacoonmeetings$
+DECLARE
+ birth DATE;
+ meeting DATE;
+BEGIN
+ birth = (SELECT MAX(dateofbirth) FROM laybrothers RIGHT JOIN acolytes ON (laybrothers.id = acolytes.laybrotherid) WHERE acolytes.id = NEW.acolyteid);
+ meeting = (SELECT MAX(meetingdate) FROM acolytemeetings WHERE id = NEW.meetingid);
+ IF ((birth + INTERVAL '6 YEARS')::date > meeting)
+ THEN
+  RETURN NULL;
+ END IF;
+ RETURN NEW;
+END;
+$checkacoonmeetings$
+language plpgsql;
+
+CREATE TRIGGER checkacolytesonmeetings BEFORE INSERT ON acolytesonmeetings
+FOR EACH ROW EXECUTE PROCEDURE checkacoonmeetings();
+
+--check acolytes on masses
+CREATE OR REPLACE FUNCTION checkacoonmasses() RETURNS TRIGGER AS
+$checkacoonmasses$
+DECLARE
+ birth DATE;
+ mass DATE;
+BEGIN
+ birth = (SELECT MAX(dateofbirth) FROM laybrothers RIGHT JOIN acolytes ON (laybrothers.id = acolytes.laybrotherid) WHERE acolytes.id = NEW.acolyteid);
+ mass = (SELECT MAX(massdate) FROM masses WHERE massid = NEW.massid);
+ IF ((birth + INTERVAL '6 YEARS')::date > mass)
+ THEN
+  RETURN NULL;
+ END IF;
+ RETURN NEW;
+END;
+$checkacoonmasses$
+language plpgsql;
+
+CREATE TRIGGER checkacolytesonmasses BEFORE INSERT ON acolytesmasses
+FOR EACH ROW EXECUTE PROCEDURE checkacoonmasses();
 
 
 --insert laybrothers
