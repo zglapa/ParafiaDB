@@ -434,6 +434,27 @@ language plpgsql;
 CREATE TRIGGER checkpriestmassdate BEFORE INSERT OR UPDATE ON priestsmasses
 FOR EACH ROW EXECUTE PROCEDURE priestmassdate();
  
+--check intialization sacraments
+CREATE OR REPLACE FUNCTION checkinisacins() RETURNS TRIGGER AS
+$checkinisacins$
+DECLARE
+ theid INT;
+BEGIN
+ theid = checksacramentsintegrity();
+ IF (theid IS NOT NULL)
+ THEN
+  DELETE FROM initializationsacraments WHERE laybrotherid = theid;
+  RETURN NULL;
+ END IF;
+ RETURN NEW;
+END;
+$checkinisacins$
+language plpgsql;
+
+CREATE TRIGGER ckechinitializationsacraments AFTER INSERT ON initializationsacraments
+FOR EACH ROW EXECUTE PROCEDURE checkinisacins();
+
+
 --insert laybrothers
 INSERT INTO laybrothers(forename,surname,gender,isparishioner,dateofbirth,motherid,fatherid,godfatherid,godmotherid) VALUES
  ( 'name76', 'surname11', 'F', true, '1989-04-25', NULL, NULL ,NULL, NULL),
