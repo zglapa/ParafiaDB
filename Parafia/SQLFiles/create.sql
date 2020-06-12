@@ -137,7 +137,8 @@ CREATE  TABLE "public".initializationsacraments (
 	massid               int  NOT NULL ,
 	laybrotherid         int  NOT NULL ,
 	sacramenttype        int  NOT NULL ,
-	CONSTRAINT pk_initializationsacraments_id_0 PRIMARY KEY ( id )
+	CONSTRAINT pk_initializationsacraments_id_0 PRIMARY KEY ( id ),
+	CONSTRAINT u_laybrotherid_sacramenttype UNIQUE (laybrotherid, sacramenttype)
  );
 
 
