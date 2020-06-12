@@ -23,7 +23,7 @@ public class MainMenuWindow {
         stage=new Stage();
         Parent setUpRoot = FXMLLoader.load(getClass().getResource("/mainmenufxml.fxml"));
         stage.setTitle("ParishDB");
-        stage.setScene(new Scene(setUpRoot, 1280, 800));
+        stage.setScene(new Scene(setUpRoot, 1280, 900));
         System.out.println(stage);
         stage.showAndWait();
     }

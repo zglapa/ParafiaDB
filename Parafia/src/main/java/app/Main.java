@@ -32,7 +32,7 @@ public class Main extends Application {
             return;
         root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
         stage.setTitle("ParishDB");
-        stage.setScene(new Scene(root, 1280, 800));
+        stage.setScene(new Scene(root, 1280, 900));
         stage.show();
     }
 
