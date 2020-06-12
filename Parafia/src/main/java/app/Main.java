@@ -1,6 +1,5 @@
 package app;
 
-import app.MainMenuWindow;
 import database.DBConnector;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -13,7 +12,7 @@ import java.util.Map;
 import static javafx.application.Platform.exit;
 
 public class Main extends Application {
-    private static MainMenuWindow mainMenuWindow=new MainMenuWindow();;
+    private static MainMenuWindow mainMenuWindow=new MainMenuWindow();
     public static String URL="jdbc:postgresql://localhost/zofia";
     public static String USER="zofia";
     public static String PASSWORD="qwerty";
@@ -29,7 +28,8 @@ public class Main extends Application {
         MainMenuWindow.PASSWORDString=PASSWORD;*/
         //------------------------------------------//
         mainMenuWindow.setUp();
-        if(MainMenuWindow.action==0) return;
+        if(MainMenuWindow.action==0)
+            return;
         root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
         stage.setTitle("ParishDB");
         stage.setScene(new Scene(root, 1280, 800));
