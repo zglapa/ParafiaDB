@@ -1,0 +1,28 @@
+sel.name="Top priests in terms of number of masses";
+sel.select="SELECT forename || ' ' || surname AS "Priest", count(massid) AS "Number of masses" FROM priestsmasses left join priests p on priestsmasses.priestid = p.id GROUP BY 1 ORDER BY 2 DESC;";
+usefulSelects.put(sel.name,sel.select);
+listView.getItems().add(sel.name);
+
+sel.name="Top acolytes in terms of number of masses";
+sel.select="SELECT forename || ' ' || surname AS "Acolyte", count(massid) AS "Number of masses" FROM acolytesmassesleft join acolytes a on acolytesmasses.acolyteid = a.id left join laybrothers l on a.laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
+usefulSelects.put(sel.name,sel.select);
+listView.getItems().add(sel.name);
+
+sel.name="Most faithful laybrothers";
+sel.select="SELECT forename || ' ' || surname AS "Laybrother", sum(amount) AS "Money donated" FROM donations left join laybrothers l on laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
+usefulSelects.put(sel.name,sel.select);
+listView.getItems().add(sel.name);
+
+sel.name="Most romantic masstypes";
+sel.select="SELECT type AS "Type of mass", count(marriages.id) AS "Number of married couples" FROM marriages left join masses a on marriages.massid = a.massid left join masstypes t on a.masstype = t.id GROUP BY 1 ORDER BY 2 DESC;";
+usefulSelects.put(sel.name,sel.select);
+listView.getItems().add(sel.name);
+
+sel.name="Average age on acolytes meetings";
+sel.select="SELECT meetingtypes.meetingtype AS "Type of meeting", count(l.dateofbirth) AS "Number of acolytes", round(sum(EXTRACT(YEAR FROM AGE(now(), l.dateofbirth)))/count(l.dateofbirth)*10)/10 AS "Average age" FROM meetingtypes left join acolytemeetings m on m.meetingtype = meetingtypes.id left join acolytesonmeetings o on o.meetingid = m.id left join acolytes a on o.acolyteid = a.id left join laybrothers l on l.id = a.laybrotherid GROUP BY 1 ORDER BY 2 DESC;";
+usefulSelects.put(sel.name,sel.select);
+listView.getItems().add(sel.name);
+
+
+
+

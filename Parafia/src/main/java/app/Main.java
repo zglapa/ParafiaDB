@@ -31,7 +31,7 @@ public class Main extends Application {
         mainMenuWindow.setUp();
         if(MainMenuWindow.action==0) return;
         root = FXMLLoader.load(getClass().getResource("/databasefxml.fxml"));
-        stage.setTitle("Parafia");
+        stage.setTitle("ParishDB");
         stage.setScene(new Scene(root, 1280, 800));
         stage.show();
     }

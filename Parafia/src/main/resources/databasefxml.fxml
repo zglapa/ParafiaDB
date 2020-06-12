@@ -23,11 +23,11 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" text="e-parish" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.DatabaseController">
+<TitledPane animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" text="e-parish" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.DatabaseController" >
   <content>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="757.0" prefWidth="1278.0">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="757.0" prefWidth="1278.0" fx:id="backgroundPane">
          <children>
-            <Accordion layoutX="22.0" layoutY="27.0" prefHeight="719.0" prefWidth="1253.0" AnchorPane.leftAnchor="22.0" AnchorPane.rightAnchor="23.800000000000182" AnchorPane.topAnchor="27.0">
+            <Accordion fx:id="acordionPane" layoutX="22.0" layoutY="27.0" prefHeight="719.0" prefWidth="1253.0" AnchorPane.leftAnchor="22.0" AnchorPane.rightAnchor="23.800000000000182" AnchorPane.topAnchor="27.0" >
               <panes>
                 <TitledPane animated="false" prefHeight="768.0" prefWidth="1024.0" text="insert">
                   <content>
@@ -127,7 +127,7 @@
                         </AnchorPane>
                   </content>
                 </TitledPane>
-                <TitledPane animated="false" prefHeight="653.0" prefWidth="1234.0" text="select">
+                <TitledPane fx:id="SELECT" animated="false" prefHeight="653.0" prefWidth="1234.0" text="select">
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="647.0" prefWidth="1169.0">
                            <children>
@@ -163,6 +163,7 @@
                                                 <String fx:value="meetingtypes" />
                                                 <String fx:value="priests" />
                                                 <String fx:value="priestsmasses" />
+                                                <String fx:value="importantdates"/>
                                             </FXCollections>
                                         </items>
                                     </ComboBox>
