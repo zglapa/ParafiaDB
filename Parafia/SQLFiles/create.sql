@@ -225,7 +225,7 @@ ALTER TABLE "public".priestsmasses ADD CONSTRAINT fk_priestsmasses_masses FOREIG
 
 CREATE VIEW importantdates AS (
  SELECT
-  laybrothers.id,
+  laybrothers.id AS "laybrotherid",
   dateofbirth,
   MAX(CASE WHEN sacramenttype = 1 THEN massdate ELSE NULL END) AS "baptism",
   MAX(CASE WHEN sacramenttype = 2 THEN massdate ELSE NULL END) AS "eucharistic",
@@ -288,7 +288,7 @@ BEGIN
 
   IF (NOT(date1 <= date2 AND date2 <= date3 AND date3 <= date4 AND date4 <= date5))
   THEN
-   RETURN row.id;
+   RETURN row.laybrotherid;
   END IF;
  END LOOP;
  RETURN NULL;
@@ -464,6 +464,8 @@ BEGIN
  THEN
   RETURN NULL;
  END IF;
+ UPDATE acolytes SET enddate = NEW.apostasydate WHERE laybrotherid = NEW.laybrotherid AND enddate IS NULL;
+ UPDATE priests SET serviceend = NEW.apostasydate WHERE laybrotherid = NEW.laybrotherid AND serviceend IS NULL;
  NEW.valid = true;
  RETURN NEW;
 END;
@@ -485,8 +487,8 @@ BEGIN
   RETURN NULL;
  END IF;
 
- UPDATE acolytes SET enddate = NEW.apostatydate WHERE laybrotherid = NEW.laybrotherid AND enddate IS NULL;
- UPDATE priests SET serviceend = NEW.apostatydate WHERE laybrotherid = NEW.laybrotherid AND serviceend IS NULL;
+ UPDATE acolytes SET enddate = NEW.apostasydate WHERE laybrotherid = NEW.laybrotherid AND enddate IS NULL;
+ UPDATE priests SET serviceend = NEW.apostasydate WHERE laybrotherid = NEW.laybrotherid AND serviceend IS NULL;
  RETURN NEW;
 END;
 $apostatyupdate$
@@ -517,6 +519,7 @@ language plpgsql;
 
 CREATE TRIGGER excommunicatedins BEFORE INSERT ON excommunicated
 FOR EACH ROW EXECUTE PROCEDURE excommunicatedinsert();
+
 
 --check if someone is alive before you kill him
 create or replace function deaths_check() returns trigger as
@@ -567,6 +570,7 @@ BEGIN
  THEN
   RETURN NULL;
  END IF;
+ UPDATE acolytes SET enddate = NEW.servicestart WHERE laybrotherid = NEW.laybrotherid AND enddate IS NULL;
  RETURN NEW;
 END;
 $checkpriests$
@@ -648,34 +652,36 @@ BEGIN
  IF ((SELECT COUNT(*) FROM priests WHERE priests.laybrotherid = NEW.laybrotherid) >0)
  THEN
   DELETE FROM initializationsacraments WHERE id = NEW.id;
-  RETURN OLD;
+  RETURN NULL;
  END IF;
 
  IF ((SELECT COUNT(*) FROM apostates WHERE apostates.laybrotherid = NEW.laybrotherid AND valid = true) > 0)
  THEN
   DELETE FROM initializationsacraments WHERE id = NEW.id;
-  RETURN OLD;
+  RETURN NULL;
  END IF;
 
  IF ((SELECT COUNT(*) FROM excommunicated WHERE excommunicated.laybrotherid = NEW.laybrotherid ) > 0)
  THEN
   DELETE FROM initializationsacraments WHERE id = NEW.id;
-  RETURN OLD;
+  RETURN NULL;
  END IF;
 
  theid = checksacramentsintegrity();
  IF (theid IS NOT NULL)
  THEN
-  DELETE FROM initializationsacraments WHERE NEW.id = id;
-  RETURN OLD;
+  DELETE FROM initializationsacraments WHERE laybrotherid = theid; --initializationsacraments.id = theid;
+  RETURN NULL;
  END IF;
- RETURN NEW;
+ RETURN NULL;
 END;
 $checkinisacins$
 language plpgsql;
 
-CREATE TRIGGER ckechinitializationsacraments AFTER INSERT OR UPDATE ON initializationsacraments
+CREATE TRIGGER ckechinitializationsacraments AFTER INSERT ON initializationsacraments
 FOR EACH ROW EXECUTE PROCEDURE checkinisacins();
+
+CREATE RULE inisacupd AS ON UPDATE TO initializationsacraments DO INSTEAD NOTHING;
 
 --check acolytes on meetings
 CREATE OR REPLACE FUNCTION checkacoonmeetings() RETURNS TRIGGER AS
