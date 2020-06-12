@@ -109,6 +109,18 @@ public class DatabaseController implements Initializable {
         acordionPane.setExpandedPane(SELECT);
     }
 
+    String getTip(String dataType) {
+        if(dataType.equals("bool"))
+            return " ('t' or 'f')";
+        if(dataType.equals("date"))
+            return " (YYYY-MM-DD)";
+        if(dataType.equals("serial"))
+            return " (automatic)";
+        if(dataType.equals("bpchar"))
+            return " ('M' or 'F')";
+        return "";
+    }
+
     //  TABLEVIEW MANAGEMENT
     private void changeTable(ResultSet rs) throws SQLException {
         tableviewSelect.getItems().clear();
@@ -437,12 +449,12 @@ public class DatabaseController implements Initializable {
         insertFlowPane.getChildren().clear();
         insertFields.clear();
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
-            InsertField insertField = new InsertField(tableData.getColumnName(i));
+            InsertField insertField = new InsertField(tableData.getColumnName(i),getTip(tableData.getColumnTypeName(i)));
             if(tableData.isNullable(i)==ResultSetMetaData.columnNoNulls){
                 insertField.setMandatory(true);
-                insertField.label.setTooltip(mandatoryTooltip);
+                insertField.description.setTooltip(mandatoryTooltip);
             }else{
-                insertField.label.setTooltip(optionalTooltip);
+                insertField.description.setTooltip(optionalTooltip);
             }
             insertFlowPane.getChildren().add(insertField.block);
             insertFields.add(insertField);
@@ -532,13 +544,13 @@ public class DatabaseController implements Initializable {
         updateFlowPane.getChildren().clear();
         updateFields.clear();
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
-            InsertField insertField = new InsertField(tableData.getColumnName(i));
+            InsertField insertField = new InsertField(tableData.getColumnName(i),getTip(tableData.getColumnTypeName(i)));
             updateFlowPane.getChildren().add(insertField.block);
             if(tableData.isNullable(i)==ResultSetMetaData.columnNoNulls){
                 insertField.setMandatory(true);
-                insertField.label.setTooltip(mandatoryTooltip);
+                insertField.description.setTooltip(mandatoryTooltip);
             }else{
-                insertField.label.setTooltip(optionalTooltip);
+                insertField.description.setTooltip(optionalTooltip);
             }
             System.out.println(tableData.getColumnTypeName(i));
             if(tableData.getColumnTypeName(i).equals("serial")){
@@ -559,7 +571,7 @@ public class DatabaseController implements Initializable {
         whereFields.clear();
         String tableName="";
         for(int i = 1; i <= tableData.getColumnCount(); ++i){
-            InsertField insertField = new InsertField(tableData.getColumnName(i));
+            InsertField insertField = new InsertField(tableData.getColumnName(i),getTip(tableData.getColumnTypeName(i)));
             whereFlowPane.getChildren().add(insertField.block);
             whereFields.add(insertField);
         }
@@ -569,7 +581,7 @@ public class DatabaseController implements Initializable {
         query.append(updateComboBox.getValue());
         query.append(" set ");
         for(InsertField updateField : updateFields){
-            if(!updateField.textField.getText().equals("")){
+            if(updateField.textField.getText() != null &&!updateField.textField.getText().equals("")){
                 query.append(updateField.label.getText());
                 query.append("='");
                 query.append(updateField.textField.getText());
@@ -579,7 +591,7 @@ public class DatabaseController implements Initializable {
         query.delete(query.length()-3,query.length()-1);
         query.append(" where ");
         for(InsertField whereField : whereFields){
-            if(!whereField.textField.getText().equals("")){
+            if(whereField.textField.getText() != null &&!whereField.textField.getText().equals("")){
                 query.append(whereField.label.getText());
                 query.append("='");
                 query.append(whereField.textField.getText());
