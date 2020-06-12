@@ -11,8 +11,6 @@ CREATE  TABLE "public".intentions (
 	CONSTRAINT pk_intentions_id_0 PRIMARY KEY ( id )
  );
 
-CREATE INDEX pk_intentions_id ON "public".intentions ( id );
-
 CREATE  TABLE "public".laybrothers ( 
 	id                   serial NOT NULL ,
 	forename             varchar(100)  NOT NULL ,
@@ -34,14 +32,6 @@ CREATE  TABLE "public".laybrothers (
 	CHECK (NOT(godmotherid=godfatherid)),
 	CHECK (NOT(id=motherid or id=godmotherid or id=godfatherid or id=godmotherid))
  );
-CREATE INDEX unq_laybrothers_godmotherid ON "public".laybrothers ( godmotherid );
-
-CREATE INDEX unq_laybrothers_godfatherid ON "public".laybrothers ( godfatherid );
-
-CREATE INDEX unq_laybrothers_motherid ON "public".laybrothers ( motherid );
-
-CREATE INDEX unq_laybrothers_fatherid ON "public".laybrothers ( fatherid );
-
 CREATE  TABLE "public".masstypes ( 
 	id                   serial  NOT NULL ,
 	"type"               varchar(20)  NOT NULL ,
@@ -55,22 +45,14 @@ CREATE  TABLE "public".meetingtypes (
 	CONSTRAINT pk_meetingtypes_id_0 PRIMARY KEY ( id )
  );
 
-CREATE INDEX pk_meetingtypes_id ON "public".meetingtypes ( id );
 
 CREATE  TABLE "public".priests ( 
-	id                   serial  NOT NULL ,
-	forename             varchar(100)  NOT NULL ,
-	surname              varchar(100)  NOT NULL ,
-	dateofbirth          date  NOT NULL ,
-	holyordersdate       date  NOT NULL ,
-	active               bool  NOT NULL ,
-	CONSTRAINT pk_priests_id_0 PRIMARY KEY ( id ),
-	CHECK(dateofbirth<=current_date),
-	CHECK(holyordersdate<=current_date),
-	CHECK(dateofbirth<holyordersdate)
+    laybrotherid         int  NOT NULL references laybrothers(id),
+	servicestart          date  NOT NULL ,
+	serviceend           date,
+	CHECK(servicestart<serviceend)
  );
 
-CREATE INDEX pk_priests_id ON "public".priests ( id );
 
 CREATE  TABLE "public".acolytemeetings ( 
 	id                   serial  NOT NULL ,
@@ -81,16 +63,15 @@ CREATE  TABLE "public".acolytemeetings (
 	CHECK(meetingdate<=current_date)
  );
 
-CREATE INDEX pk_acolytemeetings_id ON "public".acolytemeetings ( id );
 
 CREATE  TABLE "public".acolytes ( 
-	id                   serial  NOT NULL ,
-	laybrotherid         int  NOT NULL ,
-	active               bool  NOT NULL ,
-	CONSTRAINT pk_acolytes_id_0 PRIMARY KEY ( id )
+	laybrotherid         int  NOT NULL,
+	inaugurationdate     date NOT NULL,
+	enddate		     date,
+	CHECK ( enddate > inaugurationdate )
+
  );
 
-CREATE INDEX pk_acolytes_id ON "public".acolytes ( id );
 
 CREATE  TABLE "public".acolytesonmeetings ( 
 	acolyteid            int  NOT NULL ,
@@ -106,7 +87,6 @@ CREATE  TABLE "public".apostates (
 	CHECK(apostasydate<=current_date)
  );
 
-CREATE INDEX apostates_pk ON "public".apostates ( id );
 
 CREATE  TABLE "public".excommunicated ( 
 	id                   serial  NOT NULL ,
@@ -116,7 +96,6 @@ CREATE  TABLE "public".excommunicated (
 	CHECK(excommuniondate<=current_date)
 );
 
-CREATE INDEX excommunicated_pk ON "public".excommunicated ( id );
 
 CREATE  TABLE "public".donations ( 
 	id                   serial  NOT NULL ,
@@ -124,7 +103,8 @@ CREATE  TABLE "public".donations (
 	donationdate         date  NOT NULL ,
 	laybrotherid         int  NOT NULL ,
 	CONSTRAINT pk_donations_id PRIMARY KEY ( id ),
-	CHECK(donationdate<=current_date)
+	CHECK(donationdate<=current_date),
+	CHECK(amount>0)
  );
 
 CREATE  TABLE "public".masses ( 
@@ -135,12 +115,10 @@ CREATE  TABLE "public".masses (
 	masstype             int  NOT NULL ,
 	leadingpriestid      int  NOT NULL ,
 	CONSTRAINT pk_masses_massid_0 PRIMARY KEY ( massid ),
-	CHECK(massdate<=current_date)
+	CHECK(massdate<=current_date),
+	CHECK(offering>0)
  );
 
-CREATE INDEX pk_masses_massid ON "public".masses ( massid );
-
-CREATE INDEX unq_masses_masstype ON "public".masses ( masstype );
 
 CREATE  TABLE "public".priestsmasses ( 
 	priestid             int  NOT NULL ,
@@ -162,7 +140,6 @@ CREATE  TABLE "public".initializationsacraments (
 	CONSTRAINT pk_initializationsacraments_id_0 PRIMARY KEY ( id )
  );
 
-CREATE INDEX pk_initializationsacraments_id ON "public".initializationsacraments ( id );
 
 CREATE  TABLE "public".marriages ( 
 	id                   serial  NOT NULL ,
@@ -180,7 +157,6 @@ CREATE  TABLE "public".marriages (
 	CHECK (NOT(husbandbestpersonid=wifeid))
  );
 
-CREATE INDEX pk_marriages_id ON "public".marriages ( id );
 
 CREATE  TABLE "public".acolytesmasses ( 
 	acolyteid         int  NOT NULL ,
@@ -193,7 +169,7 @@ ALTER TABLE "public".acolytes ADD CONSTRAINT fk_acolytes_parishioners FOREIGN KE
 
 ALTER TABLE "public".acolytesonmeetings ADD CONSTRAINT fk_acolytesonmeetings_acolytemeetings FOREIGN KEY ( meetingid ) REFERENCES "public".acolytemeetings( id );
 
-ALTER TABLE "public".acolytesonmeetings ADD CONSTRAINT fk_acolytesonmeetings_acolytes FOREIGN KEY ( acolyteid ) REFERENCES "public".acolytes( id );
+ALTER TABLE "public".acolytesonmeetings ADD CONSTRAINT fk_acolytesonmeetings_acolytes FOREIGN KEY ( acolyteid ) REFERENCES "public".laybrothers( id );
 
 ALTER TABLE "public".apostates ADD CONSTRAINT fk_apostates_laybrothers FOREIGN KEY ( laybrotherid ) REFERENCES "public".laybrothers( id );
 
@@ -229,7 +205,7 @@ ALTER TABLE "public".marriages ADD CONSTRAINT fk_marriages_parishioners_1 FOREIG
 
 ALTER TABLE "public".marriages ADD CONSTRAINT fk_marriages_parishioners_2 FOREIGN KEY ( husbandbestpersonid ) REFERENCES "public".laybrothers( id );
 
-ALTER TABLE "public".acolytesmasses ADD CONSTRAINT fk_acolytesmasses_acolytes FOREIGN KEY ( acolyteid ) REFERENCES "public".acolytes( id );
+ALTER TABLE "public".acolytesmasses ADD CONSTRAINT fk_acolytesmasses_acolytes FOREIGN KEY ( acolyteid ) REFERENCES "public".laybrothers(id);
 
 ALTER TABLE "public".acolytesmasses ADD CONSTRAINT fk_acolytesmasses_masses FOREIGN KEY ( massid ) REFERENCES "public".masses( massid );
 
@@ -237,9 +213,9 @@ ALTER TABLE "public".masses ADD CONSTRAINT fk_masses_intentions FOREIGN KEY ( in
 
 ALTER TABLE "public".masses ADD CONSTRAINT fk_masses_masstypes FOREIGN KEY ( masstype ) REFERENCES "public".masstypes( id );
 
-ALTER TABLE "public".masses ADD CONSTRAINT fk_masses_leadingpriestid FOREIGN KEY ( leadingpriestid ) REFERENCES "public".priests( id );
+ALTER TABLE "public".masses ADD CONSTRAINT fk_masses_leadingpriestid FOREIGN KEY ( leadingpriestid ) REFERENCES "public".laybrothers( id );
 
-ALTER TABLE "public".priestsmasses ADD CONSTRAINT fk_priestsmasses_priests FOREIGN KEY ( priestid ) REFERENCES "public".priests( id );
+ALTER TABLE "public".priestsmasses ADD CONSTRAINT fk_priestsmasses_priests FOREIGN KEY ( priestid ) REFERENCES "public".laybrothers( id );
 
 ALTER TABLE "public".priestsmasses ADD CONSTRAINT fk_priestsmasses_masses FOREIGN KEY ( massid ) REFERENCES "public".masses( massid );
 
@@ -249,9 +225,9 @@ CREATE VIEW importantdates AS (
  SELECT
   laybrothers.id,
   dateofbirth,
-  MAX(CASE WHEN sacramenttype = 1 THEN massdate ELSE NULL END) AS "s1",
-  MAX(CASE WHEN sacramenttype = 2 THEN massdate ELSE NULL END) AS "s2",
-  MAX(CASE WHEN sacramenttype = 3 THEN massdate ELSE NULL END) AS "s3",
+  MAX(CASE WHEN sacramenttype = 1 THEN massdate ELSE NULL END) AS "baptism",
+  MAX(CASE WHEN sacramenttype = 2 THEN massdate ELSE NULL END) AS "eucharistic",
+  MAX(CASE WHEN sacramenttype = 3 THEN massdate ELSE NULL END) AS "confirmation",
   deathdate
  FROM
   laybrothers LEFT JOIN initializationsacraments ON (laybrothers.id = initializationsacraments.laybrotherid)
@@ -272,33 +248,33 @@ DECLARE
  date3 DATE;
  date4 DATE;
  date5 DATE;
-BEGIN 
+BEGIN
  FOR row IN (SELECT * FROM importantdates) --check if the dates are ordered properly
  LOOP
   date1 = row.dateofbirth;
-  IF (row.s1 IS NULL)
+  IF (row.Baptism IS NULL)
   THEN
    date2 = date1;
   ELSE
-   date2 = row.s1;
+   date2 = row.Baptism;
   END IF;
 
-  IF (row.s2 IS NULL)
+  IF (row.Eucharistic IS NULL)
   THEN
    date3 = date2;
   ELSE
-   date3 = row.s2;
+   date3 = row.Eucharistic;
    IF (date3 < (date1+INTERVAL'3 years')::date)
    THEN
     RETURN row.id;
    END IF;
   END IF;
 
-  IF (row.s3 IS NULL)
+  IF (row.Confirmation IS NULL)
   THEN
    date4 = date3;
   ELSE
-   date4 = row.s3;
+   date4 = row.Confirmation;
   END IF;
 
   IF (row.deathdate IS NULL)
@@ -318,36 +294,21 @@ END;
 $checksacramentsintegrity$
 language plpgsql;
 
---leading priest check
-CREATE OR REPLACE FUNCTION leadingpriestholyorders() RETURNS TRIGGER AS
-$leadingpriestholyorders$
-DECLARE
- holyorder DATE;
- mass DATE;
-BEGIN
- holyorder = (SELECT MAX(holyordersdate) FROM priests WHERE id = NEW.leadingpriestid);
- mass = NEW.massdate;
- IF (holyorder > mass)
- THEN
-  RETURN NULL;
- END IF;
- RETURN NEW;
-END;
-$leadingpriestholyorders$
-language plpgsql;
-
-CREATE TRIGGER leadingpriestcheck BEFORE INSERT OR UPDATE ON masses
-FOR EACH ROW EXECUTE PROCEDURE leadingpriestholyorders();
-
 
 --check if laybrother was born when he donated
 CREATE OR REPLACE FUNCTION donorbirthdate() RETURNS TRIGGER AS
 $donorbirthdate$
+DECLARE
+ death date;
 BEGIN
- IF ((SELECT MAX(dateofbirth) FROM laybrothers WHERE laybrothers.id = NEW.laybrotherid) >= NEW.donationdate)
+ IF ((SELECT dateofbirth FROM laybrothers WHERE laybrothers.id = NEW.laybrotherid) >= NEW.donationdate)
  THEN
   RETURN NULL;
  END IF;
+ death = (SELECT deathdate from deaths where deaths.laybrotherid=new.laybrotherid);
+ if(death is not null and death < new.donationdate)
+ then return null;
+ end if;
  RETURN NEW;
 END;
 $donorbirthdate$
@@ -360,24 +321,33 @@ FOR EACH ROW EXECUTE PROCEDURE donorbirthdate();
 create or replace function marriages_check() returns trigger as
     $$
     declare
-        massDate date;
+    massDate date;
+	best1Date date;
+	best2Date date;
     begin
         massDate = (select m.massdate from masses m where m.massid=new.massid);
         if((select l.dateofbirth from laybrothers l where l.id=new.wifeid) + INTERVAL '10 years')::date > massDate then return null;end if;
         if((select l.dateofbirth from laybrothers l where l.id=new.husbandid) + INTERVAL '10 years')::date > massDate then return null;end if;
-		if new.wifebestpersonid is not null then 
+	if new.wifebestpersonid is not null then
         	if((select l.dateofbirth from laybrothers l where l.id=new.wifebestpersonid) + INTERVAL '10 years')::date > massDate then return null;end if;
-		end if;
-		if new.husbandbestpersonid is not null then
+		best1Date = (select deathdate from deaths where laybrotherid=new.wifebestpersonid)::date;
+		if (best1Date is not null and best1Date<massDate) then return null; end if;
+	end if;
+	if new.husbandbestpersonid is not null then
         	if((select l.dateofbirth from laybrothers l where l.id=new.husbandbestpersonid) + INTERVAL '10 years')::date > massDate then return null;end if;
-		end if;
-		if  (select l.gender from laybrothers l where l.id=new.wifeid) = 'M' then return null;end if;
-		if  (select l.gender from laybrothers l where l.id=new.husbandid) = 'F' then return null;end if;
+		best2Date = (select deathdate from deaths where laybrotherid=new.husbandbestpersonid)::date;
+                if (best2Date is not null and best2Date<massDate) then return null; end if;
+	end if;
+	if  (select l.gender from laybrothers l where l.id=new.wifeid) = 'M' then return null;end if;
+	if  (select l.gender from laybrothers l where l.id=new.husbandid) = 'F' then return null;end if;
         return new;
     end;
-    $$language plpgsql;
+$$language plpgsql;
+
 create trigger marriages_check before insert or update on marriages
     for each row execute procedure marriages_check();
+
+--laybrothers_check
 --laybrothers_check
 create or replace function laybrother_check() returns trigger as
     $$
@@ -387,23 +357,84 @@ create or replace function laybrother_check() returns trigger as
         if( (select  l.dateofbirth from laybrothers l where l.id=new.godmotherid) + INTERVAL '10 years')::date > new.dateofbirth and new.godmotherid is not null then return null;end if;
         if( (select  l.dateofbirth from laybrothers l where l.id=new.godfatherid) + INTERVAL '10 years')::date > new.dateofbirth and new.godfatherid is not null then return null;end if;
         if  (select l.gender from laybrothers l where l.id=new.motherid) = 'M' and new.motherid is not null then return null;end if;
-		if  (select l.gender from laybrothers l where l.id=new.fatherid) = 'F' and new.fatherid is not null then return null;end if;
-		if  (select l.gender from laybrothers l where l.id=new.godmotherid) = 'M' and new.godmotherid is not null then return null;end if;
+	    if  (select l.gender from laybrothers l where l.id=new.fatherid) = 'F' and new.fatherid is not null then return null;end if;
+	    if  (select l.gender from laybrothers l where l.id=new.godmotherid) = 'M' and new.godmotherid is not null then return null;end if;
         if  (select l.gender from laybrothers l where l.id=new.godfatherid) = 'F' and new.godfatherid is not null then return null;end if;
-        return new;
+	    if  (new.godfatherid = new.id or new.godmotherid = new.id) then return null; end if;
+        if(new.godfatherid is not null and isAGoodGodParent(new.id,new.godfatherid,new.dateofbirth) = false) then
+            return null;
+        end if;
+        if(new.godmotherid is not null and isAGoodGodParent(new.id,new.godmotherid,new.dateofbirth) = false) then
+            return null;
+        end if;
+	return new;
     end;
     $$language plpgsql;
 create trigger laybrother_check before insert on laybrothers
     for each row execute procedure laybrother_check();
+
+create or replace function isAGoodGodParent(childid int, godparentid int, childBD date) returns bool as
+    $$
+    declare
+        godparentdeath date;
+        godparentapostasy date;
+        godparentexcom date;
+        baptism date;
+    begin
+        godparentdeath=(select deathdate from deaths where godparentid=laybrotherid);
+        godparentapostasy=(select apostasydate from apostates where godparentid=laybrotherid and valid='t');
+        godparentexcom=(select excommuniondate from excommunicated where godparentid=laybrotherid);
+        baptism=(select massdate from initializationsacraments i join masses m on i.massid = m.massid where i.laybrotherid=childid and i.sacramenttype=1);
+        if(baptism is not null) then
+            if(godparentdeath is not null and godparentdeath < baptism) then
+                return false;
+            end if;
+            if(godparentapostasy is not null and godparentapostasy < baptism) then
+                return false;
+            end if;
+            if(godparentexcom is not null and godparentexcom < baptism) then
+                return false;
+            end if;
+        else
+            if(godparentdeath is not null and godparentdeath < childBD) then
+                return false;
+            end if;
+            if(godparentapostasy is not null and godparentapostasy < childBD) then
+                return false;
+            end if;
+            if(godparentexcom is not null and godparentexcom < childBD) then
+                return false;
+            end if;
+        end if;
+        return true;
+    end;
+    $$ language plpgsql;
+
+
 create or replace function laybrothers_updt() returns trigger as
     $$
+    declare
+        sex char;
     begin
         new.id=old.id;
         new.motherid=old.motherid;
         new.fatherid=old.fatherid;
-        new.godfatherid=old.godfatherid;
-        new.godmotherid=old.godmotherid;
         new.dateofbirth=old.dateofbirth;
+        if(old.godfatherid is not null or isAGoodGodParent(new.id,new.godfatherid,new.dateofbirth) = false or new.godfatherid=null) then
+            new.godfatherid=old.godfatherid;
+        else
+            sex=(select gender from laybrothers where id=new.godfatherid);
+            if(sex='F')then return null;
+            end if;
+        end if;
+        if(old.godmotherid is not null or isAGoodGodParent(new.id,new.godmotherid,new.dateofbirth) = false or new.godfatherid=null) then
+            new.godmotherid=old.godmotherid;
+        else
+            sex=(select gender from laybrothers where id=new.godfatherid);
+            if(sex='M')then return null;
+            end if;
+        end if;
+	return new;
     end;
     $$language plpgsql;
 create trigger laybrothers_update before update on laybrothers
@@ -428,6 +459,7 @@ BEGIN
  THEN
   RETURN NULL;
  END IF;
+ NEW.valid = true;
  RETURN NEW;
 END;
 $apostasydate$
@@ -442,7 +474,11 @@ $apostatyupdate$
 BEGIN
  NEW.id = OLD.id;
  NEW.laybrotherid = OLD.laybrotherid;
- NEW.apostatydate = OLD.apostatydate;
+ NEW.apostasydate = OLD.apostasydate;
+ IF (NEW.valid = true)
+ THEN
+  RETURN NULL;
+ END IF;
  RETURN NEW;
 END;
 $apostatyupdate$
@@ -479,40 +515,110 @@ create or replace function deaths_check() returns trigger as
     begin
         a = checksacramentsintegrity();
         if(a is not null) then delete from deaths where laybrotherid=a;
-		
+
         end if;
 		return null;
     end;
     $$language plpgsql;
 create trigger deaths_check after insert or update on deaths
     for each row execute procedure deaths_check();
---check if priest had holy orders when doing mass
-CREATE OR REPLACE FUNCTION priestmassdate() RETURNS TRIGGER AS
-$priestmassdate$
-DECLARE
- holyorders DATE;
- massdate DATE;
+
+----ALL PRIEST TRIGGERS
+--priest insert check, in our parish person cannot become priest if previously married
+CREATE OR REPLACE FUNCTION checkpriests() RETURNS TRIGGER AS
+$checkpriests$
 BEGIN
- IF ((SELECT COUNT(*) FROM masses WHERE massid = NEW.massid AND leadingpriestid = NEW.priestid) > 0)
+ IF (((SELECT dateofbirth FROM laybrothers WHERE id = NEW.laybrotherid)+INTERVAL'20 years')::date > NEW.servicestart)
+ THEN 
+  RETURN NULL;
+ END IF;
+ IF (((SELECT deathdate FROM deaths WHERE laybrotherid = NEW.laybrotherid) < NEW.serviceend))
+ THEN 
+  RETURN NULL;
+ END IF;
+ IF ((SELECT COUNT(*) FROM priests WHERE servicestart < NEW.servicestart AND serviceend > NEW.serviceend AND laybrotherid = NEW.laybrotherid) >0)
  THEN
   RETURN NULL;
  END IF;
- holyorders = (SELECT MAX(holyordersdate) FROM priests WHERE id = NEW.priestid);
- massdate = (SELECT MAX(masses.massdate) FROM masses WHERE massid = NEW.massid);
- IF (holyorders > massdate)
+ IF ((SELECT gender FROM laybrothers WHERE id = NEW.laybrotherid) = 'F')
+ THEN
+  RETURN NULL;
+ END IF;
+ IF ((SELECT COUNT(*) from marriages WHERE husbandid = NEW.laybrotherid) > 0)
+ THEN
+  RETURN NULL;
+ END IF;
+ RETURN NEW; 
+END;
+$checkpriests$
+language plpgsql;
+
+CREATE TRIGGER prisetcheck BEFORE INSERT ON priests
+FOR EACH ROW EXECUTE PROCEDURE checkpriests();
+
+--priest update check
+CREATE OR REPLACE FUNCTION priestsupdate() RETURNS TRIGGER AS
+$priestupdate$
+BEGIN
+ NEW.servicestart = OLD.servicestart;
+ NEW.laybrotherid = OLD.laybrotherid;
+ IF (NEW.servicestart > NEW.serviceend)
+ THEN
+  RETURN NULL;
+ END IF;
+ IF ((SELECT deathdate FROM deaths WHERE deaths.laybrotherid = NEW.laybrotherid) < NEW.serviceend)
  THEN
   RETURN NULL;
  END IF;
  RETURN NEW;
 END;
-$priestmassdate$
+$priestupdate$
 language plpgsql;
 
- 
+CREATE TRIGGER priestupdatecheck BEFORE UPDATE ON priests
+FOR EACH ROW EXECUTE PROCEDURE priestsupdate();
 
-CREATE TRIGGER checkpriestmassdate BEFORE INSERT OR UPDATE ON priestsmasses
-FOR EACH ROW EXECUTE PROCEDURE priestmassdate();
- 
+
+--mass check, if leading priest was active
+CREATE OR REPLACE FUNCTION checkmasses() RETURNS TRIGGER AS
+$checkmasses$
+BEGIN
+ IF ((SELECT COUNT(*) FROM priests WHERE laybrotherid = NEW.leadingpriestid AND servicestart >= NEW.massdate AND serviceend <=NEW.massdate) != 0)
+ THEN
+  RETURN NULL;
+ END IF; 
+ RETURN NEW;
+END;
+$checkmasses$
+language plpgsql;
+
+CREATE TRIGGER masscheck BEFORE INSERT OR UPDATE ON masses
+FOR EACH ROW EXECUTE PROCEDURE checkmasses();
+
+--same as above, but for priestsmasses
+CREATE OR REPLACE FUNCTION checkpriestmasses() RETURNS TRIGGER AS
+$checkpriestmasses$
+DECLARE
+ mass DATE;
+BEGIN
+ mass = (SELECT massdate FROM masses WHERE masses.massid = NEW.massid); 
+ IF ((SELECT COUNT(*) FROM priests WHERE laybrotherid = NEW.priestid AND servicestart >= mass AND serviceend <=mass) != 0)
+ THEN
+  RETURN NULL;
+ END IF;
+ IF ((SELECT COUNT(*) FROM masses WHERE leadingpriestid = NEW.priestid AND massid = NEW.massid) > 0)
+ THEN
+  RETURN NULL;
+ END IF;
+ RETURN NEW;
+END;
+$checkpriestmasses$
+language plpgsql;
+
+CREATE TRIGGER priestmassescheck BEFORE INSERT OR UPDATE ON priestsmasses
+FOR EACH ROW EXECUTE PROCEDURE checkpriestmasses();
+----END OF PRIEST TRIGGERS
+
 
 --check intialization sacraments
 CREATE OR REPLACE FUNCTION checkinisacins() RETURNS TRIGGER AS
@@ -520,10 +626,15 @@ $checkinisacins$
 DECLARE
  theid INT;
 BEGIN
+ IF ((SELECT COUNT(*) FROM apostates WHERE laybrotherid = NEW.laybrotherid AND valid = true) > 0)
+ THEN
+  DELETE FROM initializationsacraments WHERE id = NEW.id;
+  RETURN OLD;
+ END IF;
  theid = checksacramentsintegrity();
  IF (theid IS NOT NULL)
  THEN
-  DELETE FROM initializationsacraments WHERE laybrotherid = theid;
+  DELETE FROM initializationsacraments WHERE NEW.id = id;
   RETURN OLD;
  END IF;
  RETURN NEW;
@@ -535,18 +646,16 @@ CREATE TRIGGER ckechinitializationsacraments AFTER INSERT OR UPDATE ON initializ
 FOR EACH ROW EXECUTE PROCEDURE checkinisacins();
 
 --check acolytes on meetings
-CREATE OR REPLACE FUNCTION checkacoonmeetings() RETURNS TRIGGER AS 
+CREATE OR REPLACE FUNCTION checkacoonmeetings() RETURNS TRIGGER AS
 $checkacoonmeetings$
 DECLARE
- birth DATE;
  meeting DATE;
 BEGIN
- birth = (SELECT MAX(dateofbirth) FROM laybrothers RIGHT JOIN acolytes ON (laybrothers.id = acolytes.laybrotherid) WHERE acolytes.id = NEW.acolyteid);
- meeting = (SELECT MAX(meetingdate) FROM acolytemeetings WHERE id = NEW.meetingid);
- IF ((birth + INTERVAL '6 YEARS')::date > meeting)
- THEN
-  RETURN NULL;
- END IF;
+ meeting = (SELECT meetingdate FROM acolytemeetings WHERE id = NEW.meetingid);
+ if (select count(laybrotherid) from acolytes where laybrotherid=new.acolyteid and meeting>inaugurationdate and (enddate is null or enddate>meeting)) <= 0
+ then
+     return null;
+     end if;
  RETURN NEW;
 END;
 $checkacoonmeetings$
@@ -559,15 +668,13 @@ FOR EACH ROW EXECUTE PROCEDURE checkacoonmeetings();
 CREATE OR REPLACE FUNCTION checkacoonmasses() RETURNS TRIGGER AS
 $checkacoonmasses$
 DECLARE
- birth DATE;
  mass DATE;
 BEGIN
- birth = (SELECT MAX(dateofbirth) FROM laybrothers RIGHT JOIN acolytes ON (laybrothers.id = acolytes.laybrotherid) WHERE acolytes.id = NEW.acolyteid);
- mass = (SELECT MAX(massdate) FROM masses WHERE massid = NEW.massid);
- IF ((birth + INTERVAL '6 YEARS')::date > mass)
- THEN
-  RETURN NULL;
- END IF;
+ mass = (SELECT massdate FROM masses WHERE massid = NEW.massid);
+ if (select count(laybrotherid) from acolytes where laybrotherid=new.acolyteid and mass>inaugurationdate and (enddate is null or enddate>mass)) <= 0
+ then
+     return null;
+     end if;
  RETURN NEW;
 END;
 $checkacoonmasses$
@@ -575,6 +682,67 @@ language plpgsql;
 
 CREATE TRIGGER checkacolytesonmasses BEFORE INSERT ON acolytesmasses
 FOR EACH ROW EXECUTE PROCEDURE checkacoonmasses();
+
+--check acolytes dates
+create or replace function checkacolytedates() returns trigger as
+    $$
+    declare
+        birth date;
+        death date;
+        apostasy date;
+        excomunice date;
+        prev date;
+        maxdate date;
+        maxenddate date;
+    begin
+        maxdate = (select max(inaugurationdate) from acolytes where laybrotherid=NEW.laybrotherid);
+        if(maxdate is not null)
+            then maxenddate = (select enddate from acolytes where laybrotherid = NEW.laybrotherid);
+                if (maxenddate is null)
+                    then return null;
+                end if;
+            end if;
+        birth = (select dateofbirth from laybrothers where id=NEW.laybrotherid);
+        death = (select deathdate from deaths where laybrotherid=NEW.laybrotherid);
+        apostasy = (select apostasydate from apostates where laybrotherid=NEW.laybrotherid);
+        excomunice = (select excommuniondate from excommunicated where laybrotherid=NEW.laybrotherid);
+        prev = (select max(enddate) from acolytes where laybrotherid=NEW.laybrotherid);
+        if((birth+interval '6 years')::date > new.inaugurationdate)
+            then return null;
+            end if;
+        if(death is not null)
+            then if(new.enddate is not null AND new.enddate > death)
+                then return null;
+                else if(new.inaugurationdate > death)
+                    then return null;
+                    end if;
+                end if;
+            end if;
+        if(apostasy is not null)
+            then if(new.enddate is not null AND new.enddate > apostasy)
+                then return null;
+                else if(new.inaugurationdate > apostasy)
+                    then return null;
+                    end if;
+                end if;
+            end if;
+        if(excomunice is not null)
+            then if(new.enddate is not null AND new.enddate > excomunice)
+                then return null;
+                else if(new.inaugurationdate > excomunice)
+                    then return null;
+                    end if;
+                end if;
+            end if;
+        if(prev is not null AND prev >= NEW.inaugurationdate)
+            then return null;
+            end if;
+        return new;
+    end;
+    $$language plpgsql;
+
+create trigger checkacolytedates before insert or update on acolytes
+    for each row execute procedure checkacolytedates();
 
 --insert laybrothers
 INSERT INTO laybrothers(forename,surname,gender,isparishioner,dateofbirth,motherid,fatherid,godfatherid,godmotherid) VALUES
@@ -1301,33 +1469,52 @@ INSERT INTO laybrothers(forename,surname,gender,isparishioner,dateofbirth,mother
  ( 'Andrzej', 'Nowak', 'M', true, '2017-10-01', 714, 715 ,NULL, NULL),
  ( 'Malgorzata', 'Nowak', 'F', true, '2018-07-01', 714, 715 ,NULL, NULL),
  ( 'Tomasz', 'Nowak', 'M', true, '2019-04-01', 714, 715 ,NULL, NULL),
- ( 'Agnieszka', 'Nowak', 'F', true, '2020-01-01', 714, 715 ,NULL, NULL);
+ ( 'Agnieszka', 'Nowak', 'F', true, '2020-01-01', 714, 715 ,NULL, NULL),
+ ( 'Jakub','Rogowski','M',true,'1958-07-06',NULL,NULL,NULL,NULL),
+  ('Piotr','Mniszek','M',true,'1956-03-23',NULL,NULL,NULL,NULL),
+  ('Patryk','Olechowski','M',true,'1957-06-21',NULL,NULL,NULL,NULL),
+  ('Olgierd','Szymonik','M',true,'1951-08-28',NULL,NULL,NULL,NULL),
+  ('Patryk','Olechowski','M',true,'1958-04-02',NULL,NULL,NULL,NULL),
+  ('Pawel','Zewlakow','M',true,'1959-03-04',NULL,NULL,NULL,NULL),
+  ('Olgierd','Olechowski','M',true,'1951-03-05',NULL,NULL,NULL,NULL),
+  ('Ignacy','Kowal','M',true,'1959-10-16',NULL,NULL,NULL,NULL),
+  ('Piotr','Szymonik','M',true,'1956-12-22',NULL,NULL,NULL,NULL),
+  ('Ignacy','Kowalski','M',true,'1950-07-26',NULL,NULL,NULL,NULL),
+  ('Ojciec','Mateusz','M',true,'1957-08-25',NULL,NULL,NULL,NULL),
+  ('Aleksander','Pawlowski','M',true,'1968-10-12',NULL,NULL,NULL,NULL),
+  ('Arnold','Kowalski','M',true,'1964-09-22',NULL,NULL,NULL,NULL),
+  ('Szymon','Szymonik','M',true,'1962-09-13',NULL,NULL,NULL,NULL),
+  ('Ignacy','Sobieraj','M',true,'1958-07-26',NULL,NULL,NULL,NULL),
+  ('Olgierd','Mniszek','M',true,'1952-08-15',NULL,NULL,NULL,NULL),
+  ('Mateusz','Markowski','M',true,'1964-04-09',NULL,NULL,NULL,NULL),
+  ('Aleksander','Olechowski','M',true,'1964-02-23',NULL,NULL,NULL,NULL),
+  ('Jan','Jonkisz','M',true,'1964-07-27',NULL,NULL,NULL,NULL),
+  ('Mateusz','Mniszek','M',true,'1955-06-02',NULL,NULL,NULL,NULL);
 
 
 -- =======================================
 --insert priests
-INSERT INTO "public".priests(forename,surname,dateofbirth,holyordersdate,active)
-VALUES
-  ('Jakub','Rogowski','1958-07-06','1981-04-08',false),
-  ('Piotr','Mniszek','1966-03-23','1990-03-06',true),
-  ('Patryk','Olechowski','1957-06-21','1980-07-28',true),
-  ('Olgierd','Szymonik','1951-08-28','1976-12-01',true),
-  ('Patryk','Olechowski','1968-04-02','1990-03-14',true),
-  ('Pawel','Zewlakow','1959-03-04','1980-08-25',true),
-  ('Olgierd','Olechowski','1961-03-05','1984-01-18',true),
-  ('Ignacy','Kowal','1969-10-16','1989-06-15',true),
-  ('Piotr','Szymonik','1956-12-22','1984-09-13',false),
-  ('Ignacy','Kowalski','1950-07-26','1973-04-16',true),
-  ('Ojciec','Mateusz','1957-08-25','1978-02-12',true),
-  ('Aleksander','Pawlowski','1968-10-12','1989-11-08',true),
-  ('Arnold','Kowalski','1964-09-22','1992-09-12',true),
-  ('Szymon','Szymonik','1962-09-13','1991-12-12',true),
-  ('Ignacy','Sobieraj','1958-07-26','1981-06-15',true),
-  ('Olgierd','Mniszek','1952-08-15','1980-10-02',true),
-  ('Mateusz','Markowski','1964-04-09','1989-10-23',false),
-  ('Aleksander','Olechowski','1964-02-23','1991-06-14',true),
-  ('Jan','Jonkisz','1964-07-27','1991-03-24',true),
-  ('Mateusz','Mniszek','1955-06-02','1982-06-03',true);
+INSERT INTO "public".priests(laybrotherid, servicestart, serviceend)
+VALUES (725, '1980-05-12','1990-01-07'),--1
+       (726, '1981-05-12','1991-01-07'),--2
+       (727, '1982-05-12','1992-01-07'),--3
+       (728, '1983-05-12','1993-01-07'),--4
+       (729, '1984-05-12','1994-01-07'),--5
+       (730, '1985-05-12','1995-01-07'),--5
+       (731, '1986-05-12','1996-01-07'),--7
+       (732, '1987-05-12','1997-01-07'),--8
+       (733, '1988-05-12','1998-01-07'),--9
+       (734, '1989-05-12','1999-01-07'),--10
+       (735, '1990-05-12','2000-01-07'),--11
+       (736, '1990-05-12','2000-01-07'),--12
+       (737, '1990-05-12','2000-01-07'),--13
+       (738, '1990-05-12','2000-01-07'),--14
+       (739, '1990-05-12','2000-01-07'),--15
+       (740, '2000-01-01','2020-01-07'),--16
+       (741, '2000-01-01','2020-01-07'),--17
+       (742, '2000-01-01','2020-01-07'),--18
+       (743, '2000-01-01',NULL),--19
+       (744, '2000-01-01',NULL);--20
 
 
  -- =============================================================
@@ -1463,741 +1650,686 @@ INSERT INTO intentions(intention)
 --insert masses
 INSERT INTO "public".masses(massdate,intentionid,offering,masstype, leadingpriestid)
 VALUES
-  	('2009-07-01',2,395.00,3,1),
-        ('1996-04-10',1,423.00,2,1),
-        ('2000-11-21',3,496.00,1,1),
-        ('2002-01-08',2,795.00,3,1),
-        ('2004-02-15',2,537.00,1,1),
-        ('1995-06-03',3,746.00,2,1),
-        ('2001-08-05',2,529.00,3,1),
-        ('2005-03-28',2,748.00,1,1),
-        ('2009-12-19',3,349.00,4,1),
-        ('1993-01-18',2,774.00,2,1),
-        ('1999-09-21',3,767.00,1,1),
-        ('2008-04-19',1,399.00,1,1),
-        ('2007-04-13',2,423.00,2,1),
-        ('1997-06-24',1,718.00,2,1),
-        ('2006-05-07',2,481.00,3,1),
-        ('1999-02-03',3,625.00,1,1),
-        ('1997-04-21',1,403.00,3,1),
-        ('1994-08-19',1,432.00,4,1),
-        ('1998-01-21',1,565.00,3,1),
-        ('1999-12-22',3,490.00,4,1),
-        ('1993-10-12',2,607.00,1,1),
-        ('2005-08-13',3,743.00,3,1),
-        ('1998-07-07',1,683.00,1,1),
-        ('2009-09-03',3,614.00,1,1),
-        ('2008-04-05',1,310.00,2,1),
-        ('2003-02-18',1,319.00,1,1),
-        ('1996-08-06',2,433.00,2,1),
-        ('1996-04-11',3,627.00,3,1),
-        ('2003-06-15',3,597.00,4,1),
-        ('1995-03-19',3,670.00,4,1),
-        ('1993-08-11',2,517.00,3,1),
-        ('1994-07-20',2,308.00,2,1),
-        ('2001-07-19',1,694.00,4,1),
-        ('2005-02-12',2,577.00,2,1),
-        ('1992-08-12',1,714.00,1,1),
-        ('2000-05-04',1,425.00,4,1),
-        ('1999-05-05',2,695.00,2,1),
-        ('2005-03-23',1,789.00,2,1),
-        ('2007-05-05',3,510.00,3,1),
-        ('2003-02-18',1,467.00,4,1),
-        ('1993-07-08',1,378.00,1,1),
-        ('2002-11-13',2,308.00,4,1),
-        ('1998-03-12',3,398.00,2,1),
-        ('1994-07-04',2,612.00,3,1),
-        ('1992-06-12',3,662.00,2,1),
-        ('2004-02-05',1,360.00,1,1),
-        ('1991-10-24',1,428.00,3,1),
-        ('2001-12-24',1,659.00,2,2),
-        ('2009-04-14',1,330.00,4,2),
-        ('1994-06-13',2,416.00,3,2),
-        ('2009-09-21',3,409.00,4,2),
-        ('2009-05-16',3,458.00,1,2),
-        ('2004-06-23',2,390.00,3,2),
-        ('1990-08-20',3,631.00,3,2),
-        ('2004-04-27',1,343.00,3,2),
-        ('2003-12-25',2,664.00,3,2),
-        ('1992-12-28',3,673.00,1,2),
-        ('1990-01-03',3,620.00,3,2),
-        ('1995-08-16',2,344.00,1,2),
-        ('2004-11-22',3,566.00,2,2),
-        ('1990-11-27',2,420.00,1,2),
-        ('2000-04-03',3,767.00,4,2),
-        ('2000-03-25',2,361.00,3,2),
-        ('1991-09-23',1,565.00,2,2),
-        ('2000-03-24',3,759.00,1,2),
-        ('1995-10-04',2,431.00,2,2),
-        ('2001-02-04',3,499.00,4,2),
-        ('1990-08-25',1,785.00,2,2),
-        ('1990-08-26',3,341.00,2,2),
-        ('2000-09-04',2,508.00,2,2),
-        ('2000-04-18',1,432.00,2,2),
-        ('2003-04-01',2,722.00,1,2),
-        ('1996-03-08',3,467.00,4,2),
-        ('1991-02-25',1,545.00,3,2),
-        ('2008-02-14',1,728.00,3,2),
-        ('2002-03-25',1,379.00,1,2),
-        ('1992-12-28',2,513.00,1,2),
-        ('1991-01-01',1,361.00,2,2),
-        ('2007-06-02',2,787.00,3,2),
-        ('1996-09-14',3,589.00,4,2),
-        ('1994-03-26',2,578.00,4,2),
-        ('1995-11-18',3,532.00,4,2),
-        ('2008-10-16',3,677.00,1,2),
-        ('1990-08-23',3,320.00,1,2),
-        ('1993-06-18',3,563.00,2,2),
-        ('2004-05-24',3,392.00,1,3),
-        ('1999-06-15',3,639.00,3,3),
-        ('2000-07-11',3,789.00,4,3),
-        ('1991-08-26',2,624.00,2,3),
-        ('2004-11-10',1,404.00,2,3),
-        ('2002-08-23',2,568.00,1,3),
-        ('2007-07-13',2,383.00,1,3),
-        ('1995-07-01',1,665.00,4,3),
-        ('1999-11-18',3,677.00,3,3),
-        ('1997-08-21',2,346.00,4,3),
-        ('1995-05-08',1,306.00,2,3),
-        ('2004-07-13',1,754.00,2,3),
-        ('2008-07-10',3,750.00,4,3),
-        ('1994-01-11',2,417.00,3,3),
-        ('1998-10-22',2,578.00,3,3),
-        ('2004-08-16',2,431.00,1,3),
-        ('2008-10-15',2,737.00,1,3),
-        ('2004-03-27',3,656.00,1,3),
-        ('2004-01-12',1,336.00,1,3),
-        ('2002-09-19',3,380.00,1,3),
-        ('2003-10-07',1,409.00,1,3),
-        ('2003-11-18',1,515.00,1,3),
-        ('2007-03-16',2,705.00,1,4),
-        ('2000-11-10',3,356.00,1,4),
-        ('2007-09-16',1,753.00,1,4),
-        ('2006-06-06',2,343.00,1,4),
-        ('2009-12-14',2,481.00,1,4),
-        ('2004-12-18',1,542.00,1,4),
-        ('2008-03-15',3,785.00,1,4),
-        ('2005-06-23',1,333.00,1,4),
-        ('2000-11-05',2,627.00,1,4),
-        ('2009-05-19',1,535.00,1,4),
-        ('2005-07-09',3,735.00,1,4),
-        ('2001-05-04',1,438.00,1,4),
-        ('2000-03-05',2,361.00,1,4),
-        ('2004-06-03',2,507.00,1,4),
-        ('2002-10-05',3,471.00,1,4),
-        ('2008-07-02',1,655.00,1,4),
-        ('2002-12-07',1,333.00,1,4),
-        ('2008-07-17',3,382.00,1,4),
-        ('2003-10-04',2,343.00,1,4),
-        ('2004-06-11',3,424.00,1,4),
-        ('2004-12-01',2,494.00,1,4),
-        ('2002-10-17',3,323.00,1,4),
-        ('2002-05-05',3,322.00,1,5),
-        ('2001-05-01',1,535.00,1,5),
-        ('2003-11-07',2,572.00,1,5),
-        ('2004-08-13',3,329.00,1,5),
-        ('2003-12-10',2,702.00,1,5),
-        ('2002-02-24',3,550.00,1,5),
-        ('2003-03-16',3,324.00,1,5),
-        ('2007-05-05',2,798.00,1,5),
-        ('2001-02-05',1,545.00,1,5),
-        ('2003-07-09',3,476.00,1,5),
-        ('2003-06-18',3,357.00,1,5),
-        ('2001-03-03',3,579.00,1,5),
-        ('2002-04-09',1,558.00,1,5),
-        ('2003-01-15',1,714.00,1,5),
-        ('2000-05-09',2,530.00,1,5),
-        ('2007-12-17',3,413.00,1,5),
-        ('2005-08-02',3,581.00,1,5),
-        ('2009-06-20',2,568.00,1,5),
-        ('2006-05-24',1,500.00,1,5),
-        ('2005-10-02',1,500.00,1,5),
-        ('2004-02-03',3,303.00,1,5),
-        ('2007-04-20',3,524.00,1,5),
-        ('2008-11-24',3,760.00,1,5),
-        ('2009-04-26',1,790.00,1,6),
-        ('2004-03-07',3,648.00,1,6),
-        ('2000-06-16',3,482.00,1,6),
-        ('2008-05-11',1,610.00,1,6),
-        ('2003-09-03',1,660.00,1,6),
-        ('2002-11-15',1,301.00,1,6),
-        ('2005-06-16',1,743.00,1,6),
-        ('2006-11-16',3,385.00,1,6),
-        ('2007-12-27',3,591.00,1,6),
-        ('2006-08-05',2,631.00,1,6),
-        ('2006-05-11',1,694.00,1,6),
-        ('2007-05-13',2,499.00,1,6),
-        ('2001-01-06',1,399.00,1,6),
-        ('2000-07-08',1,717.00,1,7),
-        ('2005-06-23',3,389.00,1,7),
-        ('2002-04-01',2,548.00,1,7),
-        ('2001-12-17',2,528.00,1,7),
-        ('2000-07-23',2,582.00,1,7),
-        ('2007-02-13',2,692.00,1,7),
-        ('2007-11-14',1,632.00,1,7),
-        ('2004-03-09',3,372.00,1,7),
-        ('2008-07-20',1,559.00,1,7),
-        ('2005-07-20',2,671.00,1,7),
-        ('2002-01-04',3,603.00,1,7),
-        ('2000-11-16',2,740.00,1,7),
-        ('2000-02-14',1,401.00,1,7),
-        ('2008-10-28',1,315.00,1,7),
-        ('2008-03-20',2,459.00,1,7),
-        ('2000-12-25',2,560.00,1,8),
-        ('2009-05-06',2,385.00,1,8),
-        ('2002-09-20',3,595.00,1,8),
-        ('2007-08-17',3,344.00,1,8),
-        ('2004-05-06',1,562.00,1,8),
-        ('2007-07-01',1,550.00,1,8),
-        ('2000-01-08',1,432.00,1,8),
-        ('2001-05-22',3,335.00,1,8),
-        ('2006-04-26',2,628.00,1,8),
-        ('2007-08-15',3,763.00,1,8),
-        ('2006-03-17',2,660.00,1,8),
-        ('2002-09-15',2,419.00,1,8),
-        ('2008-05-22',2,518.00,1,8),
-        ('2001-11-01',2,716.00,1,9),
-        ('2008-01-10',2,410.00,1,9),
-        ('2008-10-21',1,529.00,1,9),
-        ('2001-11-05',2,348.00,1,9),
-        ('2007-08-05',3,795.00,1,9),
-        ('2004-11-04',2,646.00,1,9),
-        ('2003-06-02',2,742.00,1,9),
-        ('2011-08-11',3,721.00,1,9),
-        ('2014-05-26',1,304.00,1,9),
-        ('2017-08-28',2,675.00,1,9),
-        ('2011-08-10',1,374.00,1,9),
-        ('2010-03-08',3,388.00,1,10),
-        ('2010-09-27',3,461.00,1,10),
-        ('2015-10-15',2,565.00,1,10),
-        ('2013-12-19',3,769.00,1,10),
-        ('2012-06-11',1,564.00,1,10),
-        ('2018-10-05',2,709.00,1,10),
-        ('2016-11-03',3,521.00,1,10),
-        ('2012-04-04',2,481.00,1,10),
-        ('2016-11-04',1,471.00,1,10),
-        ('2011-04-21',3,752.00,1,10),
-        ('2018-11-21',2,393.00,1,10),
-        ('2010-08-06',3,748.00,1,10),
-        ('2017-06-21',1,481.00,1,11),
-        ('2017-09-24',1,755.00,1,11),
-        ('2015-03-15',1,350.00,1,11),
-        ('2011-04-26',1,471.00,1,11),
-        ('2018-03-15',1,512.00,1,11),
-        ('2010-03-20',3,300.00,1,11),
-        ('2018-01-16',1,744.00,1,11),
-        ('2011-04-15',3,753.00,1,11),
-        ('2012-08-04',1,669.00,1,11),
-        ('2013-02-03',1,430.00,1,12),
-        ('2015-05-08',2,536.00,1,12),
-        ('2015-07-21',2,765.00,1,12),
-        ('2010-05-28',1,315.00,1,12),
-        ('2016-10-06',3,389.00,1,12),
-        ('2011-03-05',2,609.00,1,12),
-        ('2011-01-26',3,517.00,1,12),
-        ('2010-12-05',1,557.00,1,12),
-        ('2016-03-02',2,306.00,1,12),
-        ('2013-01-25',1,442.00,1,12),
-        ('2010-01-15',3,598.00,1,12),
-        ('2015-12-09',3,572.00,1,12),
-        ('2013-12-22',3,757.00,1,12),
-        ('2019-06-22',1,578.00,1,12),
-        ('2015-10-18',1,418.00,1,13),
-        ('2013-07-27',3,332.00,1,13),
-        ('2013-02-21',3,667.00,1,13),
-        ('2017-10-15',3,458.00,1,13),
-        ('2012-03-08',3,355.00,1,13),
-        ('2015-08-04',1,382.00,1,13),
-        ('2015-04-20',2,384.00,1,13),
-        ('2012-05-19',2,782.00,1,13),
-        ('2012-04-24',1,623.00,1,13),
-        ('2010-01-19',2,752.00,1,13),
-        ('2012-06-04',2,346.00,1,13),
-        ('2014-03-07',1,634.00,1,13),
-        ('2014-04-12',2,744.00,1,13),
-        ('2019-04-11',1,461.00,1,13),
-        ('2017-03-15',2,367.00,1,13),
-        ('2011-02-20',1,554.00,1,13),
-        ('2017-11-21',3,796.00,1,13),
-        ('2011-04-27',2,555.00,1,14),
-        ('2017-05-05',1,341.00,1,14),
-        ('2011-11-15',3,764.00,1,14),
-        ('2011-07-14',3,312.00,1,14),
-        ('2018-12-23',2,704.00,1,14),
-        ('2017-05-09',2,785.00,1,14),
-        ('2013-05-15',1,496.00,1,14),
-        ('2011-12-08',1,726.00,1,14),
-        ('2017-07-10',1,546.00,1,14),
-        ('2013-06-13',3,500.00,1,14),
-        ('2012-03-18',1,385.00,1,14),
-        ('2015-05-28',3,765.00,1,14),
-        ('2012-07-20',1,720.00,1,14),
-        ('2016-02-26',1,476.00,1,14),
-        ('2019-02-26',3,772.00,1,14),
-        ('2013-04-13',1,758.00,1,14),
-        ('2014-05-11',2,747.00,1,14),
-        ('2011-11-23',2,417.00,1,14),
-        ('2011-06-22',2,334.00,1,14),
-        ('2012-11-01',1,341.00,1,14),
-        ('2010-11-04',1,344.00,1,14),
-        ('2018-01-20',2,538.00,1,14),
-        ('2019-06-22',3,695.00,1,14),
-        ('2015-04-14',3,480.00,1,14),
-        ('2019-02-28',3,409.00,1,14),
-        ('2018-02-09',3,477.00,1,14),
-        ('2010-01-06',1,438.00,1,14),
-        ('2015-02-24',3,308.00,1,14),
-        ('2014-11-13',3,613.00,1,14),
-        ('2017-07-18',2,584.00,1,14),
-        ('2014-05-18',3,573.00,1,14),
-        ('2011-06-03',1,553.00,1,14),
-        ('2012-06-09',1,342.00,1,15),
-        ('2010-06-08',2,700.00,1,15),
-        ('2013-05-24',1,560.00,1,15),
-        ('2015-01-13',1,672.00,1,15),
-        ('2011-08-23',2,767.00,1,15),
-        ('2011-01-26',1,335.00,1,15),
-        ('2013-07-14',3,758.00,1,15),
-        ('2014-05-23',2,675.00,1,15),
-        ('2010-08-25',1,545.00,1,15),
-        ('2012-01-20',3,526.00,1,15),
-        ('2014-03-18',2,327.00,1,15),
-        ('2010-10-10',2,450.00,1,15),
-        ('1991-12-15',2,388.00,1,15),
-        ('1991-08-03',3,396.00,1,15),
-        ('1991-09-17',2,779.00,1,15),
-        ('1991-10-07',1,307.00,1,15),
-        ('1992-05-02',3,424.00,1,15),
-        ('1992-01-10',1,443.00,1,15),
-        ('1992-11-10',2,726.00,1,15),
-        ('1992-12-11',2,696.00,1,15),
-        ('1992-01-26',3,707.00,1,15),
-        ('1993-03-13',3,494.00,1,15),
-        ('1993-08-20',2,428.00,1,15),
-        ('1993-03-27',2,741.00,1,15),
-        ('1993-07-17',2,330.00,1,15),
-        ('1993-12-02',3,738.00,1,15),
-        ('1994-03-18',3,689.00,1,15),
-        ('1994-12-06',1,756.00,1,16),
-        ('1994-04-15',2,735.00,1,16),
-        ('1994-05-01',3,471.00,1,16),
-        ('1994-11-11',3,710.00,1,16),
-        ('1995-02-28',3,341.00,1,16),
-        ('1995-04-16',3,426.00,1,16),
-        ('1995-05-22',1,427.00,1,16),
-        ('1995-02-11',3,622.00,1,16),
-        ('1995-04-23',3,693.00,1,16),
-        ('1996-09-27',3,635.00,1,16),
-        ('1996-06-26',1,414.00,1,16),
-        ('1996-04-19',1,653.00,1,16),
-        ('1996-03-05',2,556.00,1,16),
-        ('1996-10-14',1,348.00,1,16),
-        ('1997-02-09',3,566.00,1,16),
-        ('1997-12-05',2,791.00,1,16),
-        ('1997-08-11',3,415.00,1,16),
-        ('1997-08-12',2,363.00,1,16),
-        ('1997-08-17',2,733.00,1,16),
-        ('1998-10-18',2,439.00,1,16),
-        ('1998-03-28',3,494.00,1,16),
-        ('1998-02-23',1,694.00,1,16),
-        ('1998-05-09',3,632.00,1,16),
-        ('1998-03-01',1,532.00,1,16),
-        ('1999-06-24',1,408.00,1,16),
-        ('1999-04-09',2,628.00,1,17),
-        ('1999-09-21',3,772.00,1,17),
-        ('1999-09-05',3,578.00,1,17),
-        ('1999-04-04',3,549.00,1,17),
-        ('2000-12-12',2,367.00,1,17),
-        ('2000-01-08',2,353.00,1,17),
-        ('2000-06-05',3,537.00,1,17),
-        ('2000-05-17',1,445.00,1,17),
-        ('2000-09-19',3,450.00,1,17),
-        ('2001-09-09',3,537.00,1,17),
-        ('2001-08-28',2,503.00,1,17),
-        ('2001-05-08',3,392.00,1,17),
-        ('2001-10-17',1,596.00,1,17),
-        ('2001-12-11',2,695.00,1,17),
-        ('2002-05-22',1,592.00,1,17),
-        ('2002-02-23',3,661.00,1,17),
-        ('2002-10-15',2,421.00,1,17),
-        ('2002-09-05',3,524.00,1,17),
-        ('2002-03-15',1,460.00,1,17),
-        ('2003-04-15',1,581.00,1,17),
-        ('2003-06-19',3,406.00,1,17),
-        ('2003-07-19',1,791.00,1,17),
-        ('2003-03-01',1,550.00,1,17),
-        ('2003-12-23',3,551.00,1,17),
-        ('2004-05-03',2,756.00,1,17),
-        ('2004-01-02',1,347.00,1,17),
-        ('2004-02-09',1,780.00,1,17),
-        ('2004-03-28',1,721.00,1,18),
-        ('2004-10-10',2,775.00,1,18),
-        ('2005-03-11',2,483.00,1,18),
-        ('2005-09-14',3,462.00,1,18),
-        ('2005-03-28',3,716.00,1,18),
-        ('2005-10-11',3,400.00,1,18),
-        ('2005-01-19',1,563.00,1,18),
-        ('2006-09-20',3,379.00,1,18),
-        ('2006-12-16',2,436.00,1,18),
-        ('2006-06-13',1,305.00,1,18),
-        ('2006-01-24',3,628.00,1,18),
-        ('2006-10-25',1,593.00,1,18),
-        ('2007-11-18',3,496.00,1,18),
-        ('2007-09-06',3,733.00,1,18),
-        ('2007-12-17',3,601.00,1,19),
-        ('2007-09-26',1,717.00,1,19),
-        ('2007-12-12',1,485.00,1,19),
-        ('2008-02-06',2,456.00,1,19),
-        ('2008-02-13',2,465.00,1,19),
-        ('2008-06-28',3,595.00,1,19),
-        ('2008-07-20',1,421.00,1,19),
-        ('2008-03-13',3,797.00,1,19),
-        ('2009-01-24',1,492.00,1,19),
-        ('2009-05-11',3,595.00,1,19),
-        ('2009-08-18',2,354.00,1,19),
-        ('2009-05-07',2,653.00,1,19),
-        ('2009-02-04',2,598.00,1,19),
-        ('2010-12-02',1,351.00,1,19),
-        ('2010-09-15',1,322.00,1,19),
-        ('2010-03-24',3,320.00,1,19),
-        ('2010-12-06',1,331.00,1,19),
-        ('2010-04-15',3,752.00,1,19),
-        ('2010-04-10',3,713.00,1,19);
 
+        ('2009-07-01',2,395.00,3,743),
+        ('1996-04-10',1,423.00,2,736),
+        ('2000-11-21',3,496.00,1,740),
+        ('2002-01-08',2,795.00,3,740),
+        ('2004-02-15',2,537.00,1,740),
+        ('1995-06-03',3,746.00,2,734),
+        ('2001-08-05',2,529.00,3,740),
+        ('2005-03-28',2,748.00,1,743),
+        ('2009-12-19',3,349.00,4,743),
+        ('1993-01-18',2,774.00,2,734),
+        ('1999-09-21',3,767.00,1,736),
+        ('2008-04-19',1,399.00,1,743),
+        ('2007-04-13',2,423.00,2,743),
+        ('1997-06-24',1,718.00,2,736),
+        ('2006-05-07',2,481.00,3,743),
+        ('1999-02-03',3,625.00,1,736),
+        ('1997-04-21',1,403.00,3,736),
+        ('1994-08-19',1,432.00,4,734),
+        ('1998-01-21',1,565.00,3,736),
+        ('1999-12-22',3,490.00,4,736),
+        ('1993-10-12',2,607.00,1,734),
+        ('2005-08-13',3,743.00,3,743),
+        ('1998-07-07',1,683.00,1,736),
+        ('2009-09-03',3,614.00,1,743),
+        ('2008-04-05',1,310.00,2,743),
+        ('2003-02-18',1,319.00,1,740),
+        ('1996-08-06',2,433.00,2,736),
+        ('1996-04-11',3,627.00,3,736),
+        ('2003-06-15',3,597.00,4,740),
+        ('1995-03-19',3,670.00,4,734),
+        ('1993-08-11',2,517.00,3,734),
+        ('1994-07-20',2,308.00,2,734),
+        ('2001-07-19',1,694.00,4,740),
+        ('2005-02-12',2,577.00,2,743),
+        ('1992-08-12',1,714.00,1,734),
+        ('2000-05-04',1,425.00,4,740),
+        ('1999-05-05',2,695.00,2,736),
+        ('2005-03-23',1,789.00,2,743),
+        ('2007-05-05',3,510.00,3,743),
+        ('2003-02-18',1,467.00,4,740),
+        ('1993-07-08',1,378.00,1,734),
+        ('2002-11-13',2,308.00,4,740),
+        ('1998-03-12',3,398.00,2,736),
+        ('1994-07-04',2,612.00,3,734),
+        ('1992-06-12',3,662.00,2,734),
+        ('2004-02-05',1,360.00,1,740),
+        ('1991-10-24',1,428.00,3,734),
+        ('2001-12-24',1,659.00,2,740),
+        ('2009-04-14',1,330.00,4,743),
+        ('1994-06-13',2,416.00,3,734),
+        ('2009-09-21',3,409.00,4,743),
+        ('2009-05-16',3,458.00,1,743),
+        ('2004-06-23',2,390.00,3,740),
+        ('1990-08-20',3,631.00,3,734),
+        ('2004-04-27',1,343.00,3,740),
+        ('2003-12-25',2,664.00,3,740),
+        ('1992-12-28',3,673.00,1,734),
+        ('1990-01-03',3,620.00,3,734),
+        ('1995-08-16',2,344.00,1,734),
+        ('2004-11-22',3,566.00,2,740),
+        ('1990-11-27',2,420.00,1,734),
+        ('2000-04-03',3,767.00,4,740),
+        ('2000-03-25',2,361.00,3,740),
+        ('1991-09-23',1,565.00,2,734),
+        ('2000-03-24',3,759.00,1,740),
+        ('1995-10-04',2,431.00,2,734),
+        ('2001-02-04',3,499.00,4,740),
+        ('1990-08-25',1,785.00,2,734),
+        ('1990-08-26',3,341.00,2,734),
+        ('2000-09-04',2,508.00,2,740),
+        ('2000-04-18',1,432.00,2,740),
+        ('2003-04-01',2,722.00,1,740),
+        ('1996-03-08',3,467.00,4,736),
+        ('1991-02-25',1,545.00,3,734),
+        ('2008-02-14',1,728.00,3,743),
+        ('2002-03-25',1,379.00,1,740),
+        ('1992-12-28',2,513.00,1,734),
+        ('1991-01-01',1,361.00,2,734),
+        ('2007-06-02',2,787.00,3,743),
+        ('1996-09-14',3,589.00,4,736),
+        ('1994-03-26',2,578.00,4,734),
+        ('1995-11-18',3,532.00,4,734),
+        ('2008-10-16',3,677.00,1,743),
+        ('1990-08-23',3,320.00,1,734),
+        ('1993-06-18',3,563.00,2,734),
+        ('2004-05-24',3,392.00,1,740),
+        ('1999-06-15',3,639.00,3,736),
+        ('2000-07-11',3,789.00,4,740),
+        ('1991-08-26',2,624.00,2,734),
+        ('2004-11-10',1,404.00,2,740),
+        ('2002-08-23',2,568.00,1,740),
+        ('2007-07-13',2,383.00,1,743),
+        ('1995-07-01',1,665.00,4,734),
+        ('1999-11-18',3,677.00,3,736),
+        ('1997-08-21',2,346.00,4,736),
+        ('1995-05-08',1,306.00,2,734),
+        ('2004-07-13',1,754.00,2,740),
+        ('2008-07-10',3,750.00,4,743),
+        ('1994-01-11',2,417.00,3,734),
+        ('1998-10-22',2,578.00,3,736),
+        ('2004-08-16',2,431.00,1,740),
+        ('2008-10-15',2,737.00,1,743),
+        ('2004-03-27',3,656.00,1,740),
+        ('2004-01-12',1,336.00,1,740),
+        ('2002-09-19',3,380.00,1,740),
+        ('2003-10-07',1,409.00,1,740),
+        ('2003-11-18',1,515.00,1,740),
+        ('2007-03-16',2,705.00,1,743),
+        ('2000-11-10',3,356.00,1,740),
+        ('2007-09-16',1,753.00,1,743),
+        ('2006-06-06',2,343.00,1,743),
+        ('2009-12-14',2,481.00,1,743),
+        ('2004-12-18',1,542.00,1,740),
+        ('2008-03-15',3,785.00,1,743),
+        ('2005-06-23',1,333.00,1,743),
+        ('2000-11-05',2,627.00,1,740),
+        ('2009-05-19',1,535.00,1,743),
+        ('2005-07-09',3,735.00,1,743),
+        ('2001-05-04',1,438.00,1,740),
+        ('2000-03-05',2,361.00,1,740),
+        ('2004-06-03',2,507.00,1,740),
+        ('2002-10-05',3,471.00,1,740),
+        ('2008-07-02',1,655.00,1,743),
+        ('2002-12-07',1,333.00,1,740),
+        ('2008-07-17',3,382.00,1,743),
+        ('2003-10-04',2,343.00,1,740),
+        ('2004-06-11',3,424.00,1,740),
+        ('2004-12-01',2,494.00,1,740),
+        ('2002-10-17',3,323.00,1,740),
+        ('2002-05-05',3,322.00,1,740),
+        ('2001-05-01',1,535.00,1,740),
+        ('2003-11-07',2,572.00,1,740),
+        ('2004-08-13',3,329.00,1,740),
+        ('2003-12-10',2,702.00,1,740),
+        ('2002-02-24',3,550.00,1,740),
+        ('2003-03-16',3,324.00,1,740),
+        ('2007-05-05',2,798.00,1,743),
+        ('2001-02-05',1,545.00,1,740),
+        ('2003-07-09',3,476.00,1,740),
+        ('2003-06-18',3,357.00,1,740),
+        ('2001-03-03',3,579.00,1,740),
+        ('2002-04-09',1,558.00,1,740),
+        ('2003-01-15',1,714.00,1,740),
+        ('2000-05-09',2,530.00,1,740),
+        ('2007-12-17',3,413.00,1,743),
+        ('2005-08-02',3,581.00,1,743),
+        ('2009-06-20',2,568.00,1,743),
+        ('2006-05-24',1,500.00,1,743),
+        ('2005-10-02',1,500.00,1,743),
+        ('2004-02-03',3,303.00,1,740),
+        ('2007-04-20',3,524.00,1,743),
+        ('2008-11-24',3,760.00,1,743),
+        ('2009-04-26',1,790.00,1,743),
+        ('2004-03-07',3,648.00,1,740),
+        ('2000-06-16',3,482.00,1,740),
+        ('2008-05-11',1,610.00,1,743),
+        ('2003-09-03',1,660.00,1,740),
+        ('2002-11-15',1,301.00,1,740),
+        ('2005-06-16',1,743.00,1,743),
+        ('2006-11-16',3,385.00,1,743),
+        ('2007-12-27',3,591.00,1,743),
+        ('2006-08-05',2,631.00,1,743),
+        ('2006-05-11',1,694.00,1,743),
+        ('2007-05-13',2,499.00,1,743),
+        ('2001-01-06',1,399.00,1,740),
+        ('2000-07-08',1,717.00,1,740),
+        ('2005-06-23',3,389.00,1,743),
+        ('2002-04-01',2,548.00,1,740),
+        ('2001-12-17',2,528.00,1,740),
+        ('2000-07-23',2,582.00,1,740),
+        ('2007-02-13',2,692.00,1,743),
+        ('2007-11-14',1,632.00,1,743),
+        ('2004-03-09',3,372.00,1,740),
+        ('2008-07-20',1,559.00,1,743),
+        ('2005-07-20',2,671.00,1,743),
+        ('2002-01-04',3,603.00,1,740),
+        ('2000-11-16',2,740.00,1,740),
+        ('2000-02-14',1,401.00,1,740),
+        ('2008-10-28',1,315.00,1,743),
+        ('2008-03-20',2,459.00,1,743),
+        ('2000-12-25',2,560.00,1,740),
+        ('2009-05-06',2,385.00,1,743),
+        ('2002-09-20',3,595.00,1,740),
+        ('2007-08-17',3,344.00,1,743),
+        ('2004-05-06',1,562.00,1,740),
+        ('2007-07-01',1,550.00,1,743),
+        ('2000-01-08',1,432.00,1,740),
+        ('2001-05-22',3,335.00,1,740),
+        ('2006-04-26',2,628.00,1,743),
+        ('2007-08-15',3,763.00,1,743),
+        ('2006-03-17',2,660.00,1,743),
+        ('2002-09-15',2,419.00,1,740),
+        ('2008-05-22',2,518.00,1,743),
+        ('2001-11-01',2,716.00,1,740),
+        ('2008-01-10',2,410.00,1,743),
+        ('2008-10-21',1,529.00,1,743),
+        ('2001-11-05',2,348.00,1,740),
+        ('2007-08-05',3,795.00,1,743),
+        ('2004-11-04',2,646.00,1,740),
+        ('2003-06-02',2,742.00,1,740),
+        ('2011-08-11',3,721.00,1,744),
+        ('2014-05-26',1,304.00,1,744),
+        ('2017-08-28',2,675.00,1,743),
+        ('2011-08-10',1,374.00,1,744),
+        ('2010-03-08',3,388.00,1,744),
+        ('2010-09-27',3,461.00,1,744),
+        ('2015-10-15',2,565.00,1,744),
+        ('2013-12-19',3,769.00,1,744),
+        ('2012-06-11',1,564.00,1,744),
+        ('2018-10-05',2,709.00,1,733),
+        ('2016-11-03',3,521.00,1,733),
+        ('2012-04-04',2,481.00,1,744),
+        ('2016-11-04',1,471.00,1,733),
+        ('2011-04-21',3,752.00,1,744),
+        ('2018-11-21',2,393.00,1,733),
+        ('2010-08-06',3,748.00,1,744),
+        ('2017-06-21',1,481.00,1,733),
+        ('2017-09-24',1,755.00,1,733),
+        ('2015-03-15',1,350.00,1,744),
+        ('2011-04-26',1,471.00,1,744),
+        ('2018-03-15',1,512.00,1,733),
+        ('2010-03-20',3,300.00,1,744),
+        ('2018-01-16',1,744.00,1,733),
+        ('2011-04-15',3,753.00,1,744),
+        ('2012-08-04',1,669.00,1,744),
+        ('2013-02-03',1,430.00,1,744),
+        ('2015-05-08',2,536.00,1,744),
+        ('2015-07-21',2,765.00,1,744),
+        ('2010-05-28',1,315.00,1,744),
+        ('2016-10-06',3,389.00,1,733),
+        ('2011-03-05',2,609.00,1,744),
+        ('2011-01-26',3,517.00,1,744),
+        ('2010-12-05',1,557.00,1,744),
+        ('2016-03-02',2,306.00,1,733),
+        ('2013-01-25',1,442.00,1,744),
+        ('2010-01-15',3,598.00,1,744),
+        ('2015-12-09',3,572.00,1,744),
+        ('2013-12-22',3,757.00,1,744),
+        ('2019-06-22',1,578.00,1,733),
+        ('2015-10-18',1,418.00,1,744),
+        ('2013-07-27',3,332.00,1,744),
+        ('2013-02-21',3,667.00,1,744),
+        ('2017-10-15',3,458.00,1,733),
+        ('2012-03-08',3,355.00,1,744),
+        ('2015-08-04',1,382.00,1,744),
+        ('2015-04-20',2,384.00,1,744),
+        ('2012-05-19',2,782.00,1,744),
+        ('2012-04-24',1,623.00,1,744),
+        ('2010-01-19',2,752.00,1,744),
+        ('2012-06-04',2,346.00,1,744),
+        ('2014-03-07',1,634.00,1,744),
+        ('2014-04-12',2,744.00,1,744),
+        ('2019-04-11',1,461.00,1,733),
+        ('2017-03-15',2,367.00,1,733),
+        ('2011-02-20',1,554.00,1,744),
+        ('2017-11-21',3,796.00,1,733),
+        ('2011-04-27',2,555.00,1,744),
+        ('2017-05-05',1,341.00,1,733),
+        ('2011-11-15',3,764.00,1,744),
+        ('2011-07-14',3,312.00,1,744),
+        ('2018-12-23',2,704.00,1,733),
+        ('2017-05-09',2,785.00,1,733),
+        ('2013-05-15',1,496.00,1,744),
+        ('2011-12-08',1,726.00,1,744),
+        ('2017-07-10',1,546.00,1,733),
+        ('2013-06-13',3,500.00,1,744),
+        ('2012-03-18',1,385.00,1,744),
+        ('2015-05-28',3,765.00,1,744),
+        ('2012-07-20',1,720.00,1,744),
+        ('2016-02-26',1,476.00,1,733),
+        ('2019-02-26',3,772.00,1,733),
+        ('2013-04-13',1,758.00,1,744),
+        ('2014-05-11',2,747.00,1,744),
+        ('2011-11-23',2,417.00,1,744),
+        ('2011-06-22',2,334.00,1,744),
+        ('2012-11-01',1,341.00,1,744),
+        ('2010-11-04',1,344.00,1,744),
+        ('2018-01-20',2,538.00,1,733),
+        ('2019-06-22',3,695.00,1,733),
+        ('2015-04-14',3,480.00,1,744),
+        ('2019-02-28',3,409.00,1,733),
+        ('2018-02-09',3,477.00,1,733),
+        ('2010-01-06',1,438.00,1,744),
+        ('2015-02-24',3,308.00,1,744),
+        ('2014-11-13',3,613.00,1,744),
+        ('2017-07-18',2,584.00,1,733),
+        ('2014-05-18',3,573.00,1,744),
+        ('2011-06-03',1,553.00,1,744),
+        ('2012-06-09',1,342.00,1,744),
+        ('2010-06-08',2,700.00,1,744),
+        ('2013-05-24',1,560.00,1,744),
+        ('2015-01-13',1,672.00,1,744),
+        ('2011-08-23',2,767.00,1,744),
+        ('2011-01-26',1,335.00,1,744),
+        ('2013-07-14',3,758.00,1,744),
+        ('2014-05-23',2,675.00,1,744),
+        ('2010-08-25',1,545.00,1,744),
+        ('2012-01-20',3,526.00,1,744),
+        ('2014-03-18',2,327.00,1,744),
+        ('2010-10-10',2,450.00,1,744),
+        ('1991-12-15',2,388.00,1,734),
+        ('1991-08-03',3,396.00,1,734),
+        ('1991-09-17',2,779.00,1,734),
+        ('1991-10-07',1,307.00,1,734),
+        ('1992-05-02',3,424.00,1,734),
+        ('1992-01-10',1,443.00,1,734),
+        ('1992-11-10',2,726.00,1,734),
+        ('1992-12-11',2,696.00,1,734),
+        ('1992-01-26',3,707.00,1,734),
+        ('1993-03-13',3,494.00,1,734),
+        ('1993-08-20',2,428.00,1,734),
+        ('1993-03-27',2,741.00,1,734),
+        ('1993-07-17',2,330.00,1,734),
+        ('1993-12-02',3,738.00,1,734),
+        ('1994-03-18',3,689.00,1,734),
+        ('1994-12-06',1,756.00,1,734),
+        ('1994-04-15',2,735.00,1,734),
+        ('1994-05-01',3,471.00,1,734),
+        ('1994-11-11',3,710.00,1,734),
+        ('1995-02-28',3,341.00,1,734),
+        ('1995-04-16',3,426.00,1,734),
+        ('1995-05-22',1,427.00,1,734),
+        ('1995-02-11',3,622.00,1,734),
+        ('1995-04-23',3,693.00,1,734),
+        ('1996-09-27',3,635.00,1,736),
+        ('1996-06-26',1,414.00,1,736),
+        ('1996-04-19',1,653.00,1,736),
+        ('1996-03-05',2,556.00,1,736),
+        ('1996-10-14',1,348.00,1,736),
+        ('1997-02-09',3,566.00,1,736),
+        ('1997-12-05',2,791.00,1,736),
+        ('1997-08-11',3,415.00,1,736),
+        ('1997-08-12',2,363.00,1,736),
+        ('1997-08-17',2,733.00,1,736),
+        ('1998-10-18',2,439.00,1,736),
+        ('1998-03-28',3,494.00,1,736),
+        ('1998-02-23',1,694.00,1,736),
+        ('1998-05-09',3,632.00,1,736),
+        ('1998-03-01',1,532.00,1,736),
+        ('1999-06-24',1,408.00,1,736),
+        ('1999-04-09',2,628.00,1,736),
+        ('1999-09-21',3,772.00,1,736),
+        ('1999-09-05',3,578.00,1,736),
+        ('1999-04-04',3,549.00,1,736),
+        ('2000-12-12',2,367.00,1,741),
+        ('2000-01-08',2,353.00,1,741),
+        ('2000-06-05',3,537.00,1,741),
+        ('2000-05-17',1,445.00,1,741),
+        ('2000-09-19',3,450.00,1,741),
+        ('2001-09-09',3,537.00,1,741),
+        ('2001-08-28',2,503.00,1,741),
+        ('2001-05-08',3,392.00,1,741),
+        ('2001-10-17',1,596.00,1,741),
+        ('2001-12-11',2,695.00,1,741),
+        ('2002-05-22',1,592.00,1,741),
+        ('2002-02-23',3,661.00,1,741),
+        ('2002-10-15',2,421.00,1,741),
+        ('2002-09-05',3,524.00,1,741),
+        ('2002-03-15',1,460.00,1,741),
+        ('2003-04-15',1,581.00,1,741),
+        ('2003-06-19',3,406.00,1,741),
+        ('2003-07-19',1,791.00,1,741),
+        ('2003-03-01',1,550.00,1,741),
+        ('2003-12-23',3,551.00,1,741),
+        ('2004-05-03',2,756.00,1,741),
+        ('2004-01-02',1,347.00,1,741),
+        ('2004-02-09',1,780.00,1,741),
+        ('2004-03-28',1,721.00,1,741),
+        ('2004-10-10',2,775.00,1,741),
+        ('2005-03-11',2,483.00,1,744),
+        ('2005-09-14',3,462.00,1,742),
+        ('2005-03-28',3,716.00,1,742),
+        ('2005-10-11',3,400.00,1,742),
+        ('2005-01-19',1,563.00,1,742),
+        ('2006-09-20',3,379.00,1,742),
+        ('2006-12-16',2,436.00,1,744),
+        ('2006-06-13',1,305.00,1,744),
+        ('2006-01-24',3,628.00,1,744),
+        ('2006-10-25',1,593.00,1,744),
+        ('2007-11-18',3,496.00,1,744),
+        ('2007-09-06',3,733.00,1,744),
+        ('2007-12-17',3,601.00,1,744),
+        ('2007-09-26',1,717.00,1,744),
+        ('2007-12-12',1,485.00,1,744),
+        ('2008-02-06',2,456.00,1,744),
+        ('2008-02-13',2,465.00,1,744),
+        ('2008-06-28',3,595.00,1,744),
+        ('2008-07-20',1,421.00,1,744),
+        ('2008-03-13',3,797.00,1,744),
+        ('2009-01-24',1,492.00,1,744),
+        ('2009-05-11',3,595.00,1,742),
+        ('2009-08-18',2,354.00,1,742),
+        ('2009-05-07',2,653.00,1,742),
+        ('2009-02-04',2,598.00,1,742),
+        ('2010-12-02',1,351.00,1,742),
+        ('2010-09-15',1,322.00,1,744),
+        ('2010-03-24',3,320.00,1,744),
+        ('2010-12-06',1,331.00,1,744),
+        ('2010-04-15',3,752.00,1,744),
+        ('2010-04-10',3,713.00,1,744);
 -- =====================================
 
 --insert acolytes
 INSERT INTO acolytes(
- laybrotherid, active)
+ laybrotherid, inaugurationdate, enddate)
  VALUES
-  (13, true),
-  (17, false),
-  (2, false),
-  (21, true),
-  (46, false),
-  (33, false),
-  (32, false),
-  (72, true),
-  (92, false),
-  (3, false),
-  (4, true),
-  (12, false),
-  (23, false),
-  (25, true),
-  (49, false),
-  (82, false),
-  (36, false),
-  (76, true),
-  (90, false),
-  (57, false);
+  (13, '1985-04-01','2020-01-01'),
+  (17, '1985-01-01','2020-01-01'),
+  (2, '1988-01-01','2020-01-01'),
+  (21, '1988-05-01','2020-01-01'),
+  (46, '1990-01-01',NULL),
+  (33, '1990-01-01',NULL),
+  (32, '1988-07-01',NULL),
+  (72, '1985-01-01',NULL),
+  (92, '1987-01-01',NULL),
+  (3, '1989-08-01',NULL),
+  (4, '1989-01-01',NULL),
+  (12, '1989-01-01',NULL),
+  (23, '1989-08-01',NULL),
+  (25, '1986-08-01',NULL),
+  (49, '1986-08-01',NULL),
+  (82, '1986-08-01',NULL),
+  (36, '1986-01-01',NULL),
+  (76, '1986-01-01',NULL),
+  (90, '1987-01-01',NULL),
+  (57, '1987-01-01',NULL);
+
 
 -- ======================================
 --insert acolytes masses
+
+
+--insert acolytes masses
 INSERT INTO acolytesmasses(acolyteid, massid)
 VALUES
- (8, 1),
- (8, 2),
- (11, 2),
- (6, 2),
- (13, 3),
- (2, 3),
- (5, 3),
- (16, 3),
- (4, 3),
- (7, 4),
- (15, 4),
- (18, 4),
- (16, 4),
- (17, 5),
- (7, 6),
- (18, 6),
- (2, 6),
- (1, 6),
- (15, 6),
- (7, 7),
- (19, 7),
- (11, 7),
- (9, 7),
+ (72, 1),
+ (72, 2),
+ (4, 2),
+ (33, 2),
+ (23, 3),
+ (17, 3),
+ (46, 3),
+ (82, 3),
+ (21, 3),
+ (32, 4),
+ (49, 4),
+ (76, 4),
+ (82, 4),
+ (36, 5),
+ (32, 6),
+ (76, 6),
+ (17, 6),
+ (23, 6),
+ (49, 6),
+ (32, 7),
+ (90, 7),
  (4, 7),
- (7, 8),
- (8, 8),
- (6, 8),
- (2, 8),
- (13, 9),
- (10, 9),
- (20, 9),
- (3, 10),
- (15, 11),
- (20, 11),
- (20, 12),
- (11, 12),
- (10, 13),
- (1, 13),
- (6, 13),
- (7, 14),
- (17, 14),
- (10, 15),
+ (92, 7),
+ (21, 7),
+ (32, 8),
+ (72, 8),
+ (33, 8),
+ (17, 8),
+ (23, 9),
+ (3, 9),
+ (57, 9),
+ (2, 10),
+ (49, 11),
+ (57, 11),
+ (57, 12),
+ (4, 12),
+ (3, 13),
+ (23, 13),
+ (33, 13),
+ (32, 14),
+ (36, 14),
+ (3, 15),
  (12, 16),
- (14, 16),
- (15, 16),
- (8, 16),
+ (25, 16),
+ (49, 16),
+ (72, 16),
  (12, 17),
- (18, 17),
- (20, 18),
- (18, 19),
- (13, 19),
- (16, 19),
- (2, 19),
- (3, 20),
+ (76, 17),
+ (57, 18),
+ (76, 19),
+ (23, 19),
+ (82, 19),
+ (17, 19),
  (2, 20),
- (7, 20),
+ (17, 20),
+ (32, 20),
  (12, 20),
- (20, 20),
- (17, 21),
- (16, 21),
- (6, 22),
- (8, 23),
- (4, 23),
- (3, 24),
+ (57, 20),
+ (36, 21),
+ (82, 21),
+ (33, 22),
+ (72, 23),
+ (21, 23),
  (2, 24),
- (14, 24),
- (16, 24),
- (11, 25),
- (3, 25),
- (7, 25),
- (5, 26),
- (4, 26),
- (11, 27),
- (1, 27),
- (7, 27),
- (13, 27),
- (10, 27),
- (6, 28),
+ (17, 24),
+ (25, 24),
+ (82, 24),
+ (4, 25),
+ (2, 25),
+ (32, 25),
+ (46, 26),
+ (21, 26),
+ (4, 27),
+ (23, 27),
+ (32, 27),
+ (23, 27),
+ (3, 27),
+ (33, 28),
+ (2, 28),
+ (82, 28),
  (3, 28),
- (16, 28),
- (10, 28),
- (17, 29),
- (4, 29),
- (16, 30),
- (13, 30),
- (14, 30),
- (3, 30),
- (20, 31),
- (1, 32),
- (13, 32),
- (10, 32),
- (7, 32),
- (18, 32),
- (16, 33),
- (14, 33),
- (20, 33),
- (4, 34),
- (7, 34),
- (5, 34),
- (9, 34),
- (6, 35),
- (9, 35),
- (8, 35),
- (20, 36),
+ (36, 29),
+ (21, 29),
+ (82, 30),
+ (23, 30),
+ (25, 30),
+ (2, 30),
+ (57, 31),
+ (23, 32),
+ (23, 32),
+ (3, 32),
+ (32, 32),
+ (76, 32),
+ (82, 33),
+ (25, 33),
+ (57, 33),
+ (21, 34),
+ (32, 34),
+ (46, 34),
+ (92, 34),
+ (33, 35),
+ (92, 35),
+ (72, 35),
+ (57, 36),
  (12, 36),
- (3, 37),
- (8, 37),
- (14, 37),
- (6, 37),
- (7, 37),
- (9, 38),
- (13, 38),
- (2, 38),
- (4, 38),
- (19, 39),
- (8, 39),
- (19, 40),
- (20, 40),
- (16, 40),
- (18, 40),
- (8, 40),
- (11, 41),
- (10, 42),
+ (2, 37),
+ (72, 37),
+ (25, 37),
+ (33, 37),
+ (32, 37),
+ (92, 38),
+ (23, 38),
+ (17, 38),
+ (21, 38),
+ (90, 39),
+ (72, 39),
+ (90, 40),
+ (57, 40),
+ (82, 40),
+ (76, 40),
+ (72, 40),
+ (4, 41),
+ (3, 42),
  (12, 42),
- (8, 43),
- (13, 43),
- (4, 44),
- (3, 44),
- (14, 44),
- (14, 45),
+ (72, 43),
+ (23, 43),
+ (21, 44),
+ (2, 44),
+ (25, 44),
+ (25, 45),
  (12, 46),
- (17, 46),
- (7, 47),
- (11, 47),
- (7, 48),
- (16, 49),
- (13, 49),
- (8, 50),
- (5, 50),
- (11, 50);
-
-
+ (36, 46),
+ (32, 47),
+ (4, 47),
+ (32, 48),
+ (82, 49),
+ (23, 49),
+ (72, 50),
+ (46, 50),
+ (4, 50);
 -- =========================================
 --insert priest masses
 INSERT INTO priestsmasses 
 VALUES
-(12, 1),
- (13, 1),
- (15, 1),
- (16, 1),
- (6, 1),
- (19, 2),
- (14, 2),
- (1, 2),
- (19, 3),
- (1, 3),
- (20, 3),
- (16, 3),
- (12, 3),
- (2, 4),
- (3, 4),
- (12, 5),
- (2, 5),
- (14, 6),
- (10, 6),
- (3, 6),
- (4, 6),
- (9, 7),
- (16, 7),
- (12, 7),
- (8, 7),
- (5, 7),
- (18, 8),
- (7, 8),
- (10, 8),
- (17, 8),
- (5, 9),
- (17, 9),
- (14, 9),
- (6, 10),
- (15, 10),
- (17, 10),
- (12, 11),
- (15, 11),
- (12, 12),
- (15, 13),
- (19, 13),
- (6, 13),
- (6, 14),
- (15, 14),
- (4, 14),
- (18, 15),
- (8, 15),
- (13, 15),
- (7, 15),
- (1, 16),
- (20, 16),
- (3, 16),
- (14, 17),
- (12, 17),
- (3, 17),
- (2, 17),
- (9, 18),
- (6, 18),
- (8, 18),
- (12, 19),
- (2, 19),
- (15, 19),
- (20, 20),
- (16, 20),
- (3, 20),
- (14, 21),
- (18, 21),
- (9, 22),
- (15, 23),
- (12, 23),
- (9, 24),
- (17, 24),
- (19, 24),
- (7, 24),
- (13, 24),
- (16, 25),
- (13, 25),
- (6, 25),
- (6, 26),
- (12, 27),
- (3, 27),
- (13, 27),
- (17, 27),
- (1, 27),
- (14, 28),
- (16, 28),
- (4, 28),
- (8, 29),
- (14, 29),
- (3, 30),
- (20, 30),
- (5, 30),
- (15, 30),
- (5, 31),
- (16, 31),
- (3, 31),
- (1, 32),
- (20, 32),
- (6, 32),
- (10, 32),
- (12, 33),
- (18, 33),
- (7, 33),
- (5, 34),
- (11, 34),
- (19, 34),
- (12, 34),
- (6, 34),
- (12, 35),
- (6, 35),
- (20, 35),
- (15, 36),
- (17, 36),
- (13, 36),
- (2, 36),
- (9, 36),
- (20, 37),
- (5, 37),
- (3, 38),
- (17, 38),
- (2, 38),
- (9, 38),
- (19, 38),
- (8, 39),
- (9, 39),
- (19, 39),
- (5, 40),
- (4, 40),
- (17, 41),
- (7, 42),
- (20, 42),
- (18, 42),
- (8, 42),
- (12, 42),
- (19, 43),
- (10, 43),
- (9, 43),
- (14, 43),
- (20, 44),
- (11, 44),
- (2, 44),
- (18, 45),
- (17, 46),
- (2, 46),
- (13, 46),
- (6, 47),
- (8, 47),
- (7, 47),
- (14, 47),
- (15, 48),
- (1, 49),
- (10, 49),
- (10, 50),
- (12, 50),
- (6, 50),
- (20, 50),
- (4, 50);
+ (742,350),
+ (744,375),
+ (744,382),
+ (741,358),
+ (740,355),
+ (744,362),
+ (742,386),
+ (742,389),
+ (741,378),
+ (743,357),
+ (742,393),
+ (741,390),
+ (742,355),
+ (740,376),
+ (741,373),
+ (741,346),
+ (741,387),
+ (742,370),
+ (740,356),
+ (743,375),
+ (742,355),
+ (744,375),
+ (742,394),
+ (744,355),
+ (743,357),
+ (744,383),
+ (744,387),
+ (744,367),
+ (741,365),
+ (743,385),
+ (741,351),
+ (741,347),
+ (743,393),
+ (741,348),
+ (743,351),
+ (744,381),
+ (741,379),
+ (740,351),
+ (742,385),
+ (740,377),
+ (744,350),
+ (742,388),
+ (741,358),
+ (744,377),
+ (740,377),
+ (742,375),
+ (740,347),
+ (741,371),
+ (742,385),
+ (740,378),
+ (741,346),
+ (740,350),
+ (743,358),
+ (743,362),
+ (741,382),
+ (741,353),
+ (743,384),
+ (744,350),
+ (743,346),
+ (741,347),
+ (742,383),
+ (741,348),
+ (740,386),
+ (744,366),
+ (742,352),
+ (741,358),
+ (744,389),
+ (744,393),
+ (741,347),
+ (740,377),
+ (742,376),
+ (741,351),
+ (740,367),
+ (740,350),
+ (744,351),
+ (742,383),
+ (743,384),
+ (740,386),
+ (741,370),
+ (744,351),
+ (744,395),
+ (741,369),
+ (740,378),
+ (742,362),
+ (743,357),
+ (740,391),
+ (740,385),
+ (742,386),
+ (740,345),
+ (743,375),
+ (744,375),
+ (744,357),
+ (742,382),
+ (744,379),
+ (740,382),
+ (740,389),
+ (741,382),
+ (742,362),
+ (741,375),
+ (740,393);
 -- ======================================
 --insert meeting types
 INSERT INTO meetingtypes(meetingtype)
@@ -2236,46 +2368,106 @@ INSERT INTO acolytemeetings(meetingdate, meetingtype, meetingcost)
 INSERT INTO acolytesonmeetings(
  acolyteid, meetingid)
  VALUES
- (1, 1),
- (1, 2),
- (2, 3),
- (2, 4),
- (4, 5),
- (3, 6),
- (3, 7),
- (7, 8),
- (9, 9),
- (9, 10),
- (9, 4),
- (10, 5),
- (10, 6),
- (12, 7),
- (13, 1),
- (13, 3),
- (13, 4),
- (13, 5),
- (14, 6),
- (14, 2),
- (15, 12),
- (15, 13),
- (15, 14),
- (15, 18),
- (15, 15),
- (16, 16),
- (16, 17),
- (16, 18),
- (16, 19),
- (17, 10),
- (17, 14),
- (17, 15),
- (17, 16),
- (17, 17),
- (17, 11),
- (18, 13),
- (18, 14),
- (18, 15),
- (18, 16),
- (19, 12);
+(3,10),
+(3,5),
+(4,1),
+(57,15),
+(36,7),
+(57,8),
+(90,14),
+(76,13),
+(49,8),
+(90,2),
+(57,2),
+(13,18),
+(76,3),
+(76,8),
+(36,9),
+(36,8),
+(49,1),
+(76,15),
+(3,10),
+(76,5),
+(82,7),
+(76,7),
+(57,2),
+(57,11),
+(36,7),
+(49,6),
+(76,7),
+(49,12),
+(90,13),
+(82,14),
+(76,20),
+(3,17),
+(57,6),
+(49,7),
+(36,19),
+(90,19),
+(82,14),
+(57,11),
+(57,3),
+(90,20),
+(4,9),
+(36,2),
+(36,20),
+(82,2),
+(3,15),
+(36,14),
+(36,4),
+(82,16),
+(3,9),
+(36,6),
+(57,17),
+(57,18),
+(36,11),
+(49,13),
+(76,20),
+(76,16),
+(49,13),
+(4,14),
+(49,2),
+(13,17),
+(13,18),
+(3,18),
+(90,2),
+(76,5),
+(57,12),
+(90,2),
+(13,12),
+(36,5),
+(13,10),
+(76,15),
+(4,19),
+(49,9),
+(49,14),
+(82,14),
+(82,4),
+(76,20),
+(4,12),
+(3,18),
+(90,8),
+(13,12),
+(13,13),
+(3,9),
+(76,7),
+(36,2),
+(36,11),
+(76,11),
+(90,8),
+(82,19),
+(4,8),
+(49,6),
+(3,8),
+(76,20),
+(90,2),
+(82,5),
+(57,6),
+(76,17),
+(36,20),
+(3,2),
+(90,2),
+(90,12);
 --======================================
 --insert deaths
 INSERT INTO "public".deaths(massid, laybrotherid, deathdate)
