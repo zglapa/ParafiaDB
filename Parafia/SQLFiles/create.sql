@@ -648,6 +648,7 @@ CREATE OR REPLACE FUNCTION checkinisacins() RETURNS TRIGGER AS
 $checkinisacins$
 DECLARE
  theid INT;
+ mass DATE;
 BEGIN
  IF ((SELECT COUNT(*) FROM priests WHERE priests.laybrotherid = NEW.laybrotherid) >0)
  THEN
@@ -655,7 +656,8 @@ BEGIN
   RETURN NULL;
  END IF;
 
- IF ((SELECT COUNT(*) FROM apostates WHERE apostates.laybrotherid = NEW.laybrotherid AND valid = true) > 0)
+ mass = (SELECT massdate FROM masses WHERE massid = NEW.massid);
+ IF ((SELECT COUNT(*) FROM apostates WHERE apostates.laybrotherid = NEW.laybrotherid AND valid = true AND apostates.apostasydate < mass) > 0)
  THEN
   DELETE FROM initializationsacraments WHERE id = NEW.id;
   RETURN NULL;
