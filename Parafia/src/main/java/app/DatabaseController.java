@@ -485,7 +485,12 @@ public class DatabaseController implements Initializable {
         ResultSet rs1 = QueryExecutor.executeSelect("select count(*) from " + tableName + ";");
         rs1.next();
         String before = rs1.getString(1);
-        QueryExecutor.executeQuery(insertString);
+        try{
+            QueryExecutor.executeQuery(insertString);
+        }catch (Exception ignored){
+            insertLog.setText(insertString + "\n" + "unsuccessful");
+            return;
+        }
         ResultSet rs2 = QueryExecutor.executeSelect("select count(*) from " + tableName + ";");
         rs2.next();
         String after = rs2.getString(1);
