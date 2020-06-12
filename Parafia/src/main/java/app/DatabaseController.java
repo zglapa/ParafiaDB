@@ -681,16 +681,29 @@ public class DatabaseController implements Initializable {
     private void populateListView(){
         listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         usefulSelects = new HashMap<>();
-        UsefulSelect sel = new UsefulSelect("Parents info","select person.id, person.forename,person.surname,person.gender,person.isparishioner,person.dateofbirth,person.motherid,mother.forename,mother.surname,mother.dateofbirth,person.fatherid,father.forename,father.surname,father.dateofbirth from laybrothers person join laybrothers mother on person.motherid=mother.id join laybrothers father on person.fatherid=father.id;");
+        UsefulSelect sel = new UsefulSelect("Parents info",
+                "select person.id, person.forename || ' ' || person.surname AS \"Child\"," +
+                    " person.gender AS \"Gender\",person.isparishioner AS \"Parishioner\",person.dateofbirth AS \"Date of birth\"," +
+                    " person.motherid AS \"MotherID\",mother.forename || ' ' || mother.surname AS \"Mother\",mother.dateofbirth AS \"Date of birth\"," +
+                    " person.fatherid AS \"FatherID\",father.forename || ' ' || father.surname AS \"Father\",father.dateofbirth AS \"Date of birth\"" +
+                    " from laybrothers person join laybrothers mother on person.motherid=mother.id join laybrothers father on person.fatherid=father.id;");
         usefulSelects.put(sel.name,sel.select);
         listView.getItems().add(sel.name);
-        sel.name="Top priests in terms of number of masses";
-        sel.select="SELECT forename || ' ' || surname AS \"Priest\", count(massid) AS \"Number of masses\" FROM priestsmasses left join priests p on priestsmasses.priestid = p.id GROUP BY 1 ORDER BY 2 DESC;";
+
+        sel.name="Priests with most masses as secondary";
+        sel.select=
+                "SELECT forename || ' ' || surname AS \"Priest\", count(massid) AS \"Number of masses\"" +
+                " FROM priestsmasses left join laybrothers l on priestsmasses.priestid = l.id" +
+                " GROUP BY 1" +
+                " ORDER BY 2 DESC;";
         usefulSelects.put(sel.name,sel.select);
         listView.getItems().add(sel.name);
 
         sel.name="Top acolytes in terms of number of masses";
-        sel.select="SELECT forename || ' ' || surname AS \"Acolyte\", count(massid) AS \"Number of masses\" FROM acolytesmasses left join acolytes a on acolytesmasses.acolyteid = a.id left join laybrothers l on a.laybrotherid = l.id GROUP BY 1 ORDER BY 2 DESC;";
+        sel.select="SELECT forename || ' ' || surname AS \"Acolyte\"," +
+                " count(massid) AS \"Number of masses\"" +
+                " FROM acolytesmasses left join acolytes a on acolytesmasses.acolyteid = a.laybrotherid left join laybrothers l on a.laybrotherid = l.id" +
+                " GROUP BY 1 ORDER BY 2 DESC;";
         usefulSelects.put(sel.name,sel.select);
         listView.getItems().add(sel.name);
 
@@ -705,157 +718,11 @@ public class DatabaseController implements Initializable {
         listView.getItems().add(sel.name);
 
         sel.name="Average age on acolytes meetings";
-        sel.select="SELECT meetingtypes.meetingtype AS \"Type of meeting\", count(l.dateofbirth) AS \"Number of acolytes\", round(sum(EXTRACT(YEAR FROM AGE(now(), l.dateofbirth)))/count(l.dateofbirth)) AS \"Average age\" FROM meetingtypes left join acolytemeetings m on m.meetingtype = meetingtypes.id left join acolytesonmeetings o on o.meetingid = m.id left join acolytes a on o.acolyteid = a.id left join laybrothers l on l.id = a.laybrotherid GROUP BY 1 ORDER BY 2 DESC;";
+        sel.select="SELECT meetingtypes.meetingtype AS \"Type of meeting\", count(l.dateofbirth) AS \"Number of acolytes\", round(sum(EXTRACT(YEAR FROM AGE(now(), l.dateofbirth)))/count(l.dateofbirth)) AS \"Average age\"" +
+                " FROM meetingtypes left join acolytemeetings m on m.meetingtype = meetingtypes.id left join acolytesonmeetings o on o.meetingid = m.id left join acolytes a on o.acolyteid = a.laybrotherid left join laybrothers l on l.id = a.laybrotherid" +
+                " GROUP BY 1 ORDER BY 2 DESC;";
         usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Godparents info";
-        sel.select="select * from laybrothers person join laybrothers gmother on person.godmotherid=gmother.id join laybrothers gfather on person.godfatherid=gfather.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Women and their children";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, child.id,child.forename,child.surname,child.dateofbirth, child.gender from laybrothers person join laybrothers child on person.id=child.motherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Men and their children";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, child.id,child.forename,child.surname,child.dateofbirth, child.gender from laybrothers person join laybrothers child on person.id=child.fatherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Women and their husbands";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, spouse.id,spouse.forename,spouse.surname,spouse.dateofbirth from laybrothers person join marriages m on person.id = m.wifeid join laybrothers spouse on m.husbandid=spouse.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Men and their wifes";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, spouse.id,spouse.forename,spouse.surname,spouse.dateofbirth from laybrothers person join marriages m on person.id = m.husbandid join laybrothers spouse on m.wifeid=spouse.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Apostates full info";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, person.gender from laybrothers person join apostates a on person.id = a.laybrotherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Apostates - godfathers";
-        sel.select="select person.id,person.forename,person.surname,person.dateofbirth,person.gender, gchild.id, gchild.forename, gchild.surname, gchild.dateofbirth,gchild.gender from laybrothers person join apostates a on person.id = a.laybrotherid join laybrothers gchild on a.laybrotherid=gchild.godfatherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Apostates - godmothers";
-        sel.select="select person.id,person.forename,person.surname,person.dateofbirth,person.gender, gchild.id, gchild.forename, gchild.surname, gchild.dateofbirth,gchild.gender from laybrothers person join apostates a on person.id = a.laybrotherid join laybrothers gchild on a.laybrotherid=gchild.godmotherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Excommunicated full info";
-        sel.select="select person.id, person.forename, person.surname, person.dateofbirth, person.gender from laybrothers person join excommunicated a on person.id = a.laybrotherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Excommunicated - godfathers";
-        sel.select="select person.id,person.forename,person.surname,person.dateofbirth,person.gender, gchild.id, gchild.forename, gchild.surname, gchild.dateofbirth,gchild.gender from laybrothers person join excommunicated a on person.id = a.laybrotherid join laybrothers gchild on a.laybrotherid=gchild.godfatherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Excommunicated - godmothers";
-        sel.select="select person.id,person.forename,person.surname,person.dateofbirth,person.gender, gchild.id, gchild.forename, gchild.surname, gchild.dateofbirth,gchild.gender from laybrothers person join excommunicated a on person.id = a.laybrotherid join laybrothers gchild on a.laybrotherid=gchild.godmotherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Marriages full info";
-        sel.select="select m.id,m2.massdate, w.id,w.forename,w.surname,w.dateofbirth,h.id,h.forename,h.surname,h.dateofbirth,wb.id,wb.forename,wb.surname,hb.id,hb.forename,hb.surname from marriages m join laybrothers w on m.wifeid = w.id join laybrothers h on m.husbandid=h.id left join laybrothers wb on m.wifebestpersonid=wb.id left join laybrothers hb on m.husbandbestpersonid=hb.id join masses m2 on m.massid = m2.massid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Marriages masses info";
-        sel.select="select m.id,m2.massdate,m3.type,p2.id, p2.forename,p2.surname, w.id,w.forename,w.surname,w.dateofbirth,h.id,h.forename,h.surname,h.dateofbirth from marriages m join laybrothers w on m.wifeid = w.id join laybrothers h on m.husbandid=h.id join masses m2 on m.massid = m2.massid left join priestsmasses p on m2.massid = p.massid left join priests p2 on p.priestid = p2.id join masstypes m3 on m2.masstype = m3.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Marriage with highest offering mass";
-        sel.select="select m.id,m2.massdate,m2.offering, w.forename,w.surname,h.forename,h.surname from marriages m join laybrothers w on m.wifeid = w.id join laybrothers h on m.husbandid=h.id join masses m2 on m.massid = m2.massid order by m2.offering DESC;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Donations full info";
-        sel.select="select d.id,d.amount,d.donationdate,l.id,l.forename,l.surname from donations d join laybrothers l on d.laybrotherid = l.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Donations parishioners vs. non-parishioners(sum)";
-        sel.select="select (select sum(d.amount) from donations d join laybrothers l2 on d.laybrotherid = l2.id where l2.isparishioner='true') as \"Parishioners donations\", (select sum(d.amount) from donations d join laybrothers l2 on d.laybrotherid = l2.id where l2.isparishioner='false') as \"Non-parishioner donations\";";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Donations parishioners vs. non-parishioners(amount)";
-        sel.select="select (select count(*) from donations d join laybrothers l2 on d.laybrotherid = l2.id where l2.isparishioner='true') as \"Parishioners donations\", (select count(*) from donations d join laybrothers l2 on d.laybrotherid = l2.id where l2.isparishioner='false') as \"Non-parishioner donations\";";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Best donors";
-        sel.select="select sum(d.amount),l.id,l.forename,l.surname from donations d join laybrothers l on d.laybrotherid = l.id group by l.id, l.forename, l.surname order by 1 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Deaths full info";
-        sel.select="select d.deathdate,l.id,l.forename,l.surname,date_part('years',age(d.deathdate,l.dateofbirth)) as age, l.isparishioner,m.massdate,p2.id,p2.forename,p2.surname  from deaths d join laybrothers l on d.laybrotherid = l.id left join masses m on d.massid =  m.massid left join priestsmasses p on m.massid = p.massid left join priests p2 on p.priestid = p2.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Deaths with highest offering mass";
-        sel.select="select d.deathdate,l.forename,l.surname,m.massdate,m.offering  from deaths d join laybrothers l on d.laybrotherid = l.id left join masses m on d.massid =  m.massid left join priestsmasses p on m.massid = p.massid left join priests p2 on p.priestid = p2.id order by 5 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Parents of the dead";
-        sel.select="select d.deathdate,l.forename,l.surname, f.forename,f.surname,m.forename,m.forename  from deaths d join laybrothers l on d.laybrotherid = l.id join laybrothers f on f.id=l.fatherid join laybrothers m on m.id=l.motherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Children of the dead men";
-        sel.select="select d.deathdate,l.forename,l.surname, c.forename,c.surname from deaths d join laybrothers l on d.laybrotherid = l.id  join laybrothers c on l.id=c.fatherid ;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Children of the dead women";
-        sel.select="select d.deathdate,l.forename,l.surname, c.forename,c.surname from deaths d join laybrothers l on d.laybrotherid = l.id  join laybrothers c on l.id=c.motherid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Acolytes full info";
-        sel.select="select a.id, l.id, l.forename,l.surname,date_part('years',age(current_timestamp,l.dateofbirth)) as age,l.gender, a.active from acolytes a join laybrothers l on a.laybrotherid = l.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Acolytes service on masses";
-        sel.select="select m.massid, m.massdate, p.id, l.forename,l.surname from acolytes p join acolytesmasses a on p.id = a.acolyteid join masses m on a.massid = m.massid join laybrothers l on p.laybrotherid = l.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Number of acolytes on masses";
-        sel.select="select m.massid, m.massdate, count(p.id) from acolytes p join acolytesmasses a on p.id = a.acolyteid right join masses m on a.massid = m.massid join laybrothers l on p.laybrotherid = l.id group by m.massid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Acolytes with the most masses service";
-        sel.select="select p.id,l.forename,l.forename,count(m.massid) from acolytes p join acolytesmasses a on p.id = a.acolyteid left join masses m on a.massid = m.massid join laybrothers l on p.laybrotherid = l.id group by  p.id,l.forename,l.forename order by 4 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Acolytes with the best meetings attendance";
-        sel.select="select a.id,l.forename,l.surname, count(a3.id) from acolytes a join acolytesonmeetings a2 on a.id = a2.acolyteid join acolytemeetings a3 on a2.meetingid = a3.id join laybrothers l on a.laybrotherid = l.id group by a.id,l.forename,l.surname order by 4 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Number of acolytes on meetings";
-        sel.select="select a3.id, m.meetingtype, count(a.id) from acolytes a join acolytesonmeetings a2 on a.id = a2.acolyteid join acolytemeetings a3 on a2.meetingid = a3.id join meetingtypes m on a3.meetingtype = m.id group by a3.id, m.meetingtype order by 3 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Acolytes on meetings full info";
-        sel.select="select a3.id,a3.meetingdate,m.meetingtype, a.id,l.forename,l.surname from acolytes a join acolytesonmeetings a2 on a.id = a2.acolyteid join acolytemeetings a3 on a2.meetingid = a3.id join laybrothers l on a.laybrotherid = l.id join meetingtypes m on a3.meetingtype = m.id order by a3.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Most common meeting types";
-        sel.select="select m.meetingtype, count(a.id) from meetingtypes m left join acolytemeetings a on m.id = a.meetingtype group by m.meetingtype order by 2 desc;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Initialization sacraments full info";
-        sel.select="select i.id, m.massdate, t.sacramenttype,l.forename,l.surname,date_part('years',age(m.massdate,l.dateofbirth)) as age  from initializationsacraments i join initializationsacramentstypes t on i.sacramenttype = t.id join laybrothers l on i.laybrotherid = l.id join masses m on i.massid = m.massid left join priestsmasses p on m.massid = p.massid left join priests p2 on p.priestid = p2.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Number of sacraments on certain masses";
-        sel.select="select m.massid, m.massdate, count(i.id), t.sacramenttype from initializationsacraments i join masses m on i.massid = m.massid join initializationsacramentstypes t on i.sacramenttype = t.id group by m.massid, m.massdate, t.sacramenttype;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Number of men and women on certain masses";
-        sel.select="select m.massid, m.massdate, sum(case when l.gender='F' then 1 else 0 end ) as women,sum(case when l.gender='M' then 1 else 0 end ) as men, t.sacramenttype from initializationsacraments i join masses m on i.massid = m.massid join initializationsacramentstypes t on i.sacramenttype = t.id join laybrothers l on i.laybrotherid = l.id  group by m.massid, m.massdate, t.sacramenttype;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Number of sacraments given to children and adults";
-        sel.select="select sum(case when date_part('years',age(m.massdate,l.dateofbirth))>=18 then 1 else 0 end) as \"adults\",sum(case when date_part('years',age(m.massdate,l.dateofbirth))>=18 then 0 else 1 end) as \"children\"  from initializationsacraments i join laybrothers l on i.laybrotherid = l.id join masses m on i.massid = m.massid;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Priests on sacraments";
-        sel.select="select i.id,m.massid,i2.sacramenttype, p2.forename,p2.surname  from initializationsacraments i left join priestsmasses p on i.massid = p.massid left join priests p2 on p.priestid = p2.id join masses m on i.massid = m.massid join initializationsacramentstypes i2 on i.sacramenttype = i2.id;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
-        sel.name="Most common types of sacraments";
-        sel.select="select i2.sacramenttype ,count(i.id) from initializationsacraments i join initializationsacramentstypes i2 on i.sacramenttype = i2.id group by i2.sacramenttype;";
-        usefulSelects.put(sel.name,sel.select);
-        listView.getItems().add(sel.name);
+        
 
     }
 }
