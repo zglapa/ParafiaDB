@@ -89,10 +89,9 @@ CREATE  TABLE "public".apostates (
 
 
 CREATE  TABLE "public".excommunicated ( 
-	id                   serial  NOT NULL ,
 	laybrotherid         int  NOT NULL ,
 	excommuniondate         date  NOT NULL ,
-	CONSTRAINT pk_excommunicated_id PRIMARY KEY ( id ),
+	CONSTRAINT pk_excommunicated_id PRIMARY KEY ( laybrotherid ),
 	CHECK(excommuniondate<=current_date)
 );
 
@@ -129,6 +128,7 @@ CREATE  TABLE "public".deaths (
 	massid               int ,
 	laybrotherid         int  NOT NULL ,
 	deathdate            date  NOT NULL ,
+	CONSTRAINT u_deaths_laybrotherid UNIQUE ( laybrotherid ),
 	CHECK(deathdate<=current_date)
  );
 
@@ -325,6 +325,10 @@ create or replace function marriages_check() returns trigger as
 	best1Date date;
 	best2Date date;
     begin
+	IF ((SELECT COUNT(*) FROM priests WHERE laybrotherid = NEW.husbandid)>0)
+	THEN
+	 RETURN NULL;
+	END IF;
         massDate = (select m.massdate from masses m where m.massid=new.massid);
         if((select l.dateofbirth from laybrothers l where l.id=new.wifeid) + INTERVAL '10 years')::date > massDate then return null;end if;
         if((select l.dateofbirth from laybrothers l where l.id=new.husbandid) + INTERVAL '10 years')::date > massDate then return null;end if;
@@ -347,7 +351,6 @@ $$language plpgsql;
 create trigger marriages_check before insert or update on marriages
     for each row execute procedure marriages_check();
 
---laybrothers_check
 --laybrothers_check
 create or replace function laybrother_check() returns trigger as
     $$
@@ -514,10 +517,18 @@ create or replace function deaths_check() returns trigger as
         a int;
     begin
         a = checksacramentsintegrity();
-        if(a is not null) then delete from deaths where laybrotherid=a;
-
+        if(a is not null) then delete from deaths where laybrotherid=a; return null;
         end if;
-		return null;
+	IF ((SELECT massdate FROM masses WHERE massid = NEW.massid) < NEW.deathdate)
+	THEN
+	 DELETE FROM deaths WHERE laybrotherid = NEW.laybrotherid;
+	 RETURN NULL;
+	END IF;
+	
+	UPDATE acolytes SET enddate = NEW.deathdate WHERE laybrotherid = NEW.laybrotherid AND enddate IS NULL;
+	UPDATE priests SET serviceend = NEW.deathdate WHERE laybrotherid = NEW.laybrotherid AND serviceend IS NULL;
+	return null;
+
     end;
     $$language plpgsql;
 create trigger deaths_check after insert or update on deaths
@@ -626,6 +637,12 @@ $checkinisacins$
 DECLARE
  theid INT;
 BEGIN
+ IF ((SELECT COUNT(*) FROM priests WHERE laybrotherid = NEW.laybrotherid) >0)
+ THEN
+  DELETE FROM initializationsacraments WHERE id = NEW.id;
+  RETURN OLD;
+ END IF;
+
  IF ((SELECT COUNT(*) FROM apostates WHERE laybrotherid = NEW.laybrotherid AND valid = true) > 0)
  THEN
   DELETE FROM initializationsacraments WHERE id = NEW.id;
@@ -695,6 +712,10 @@ create or replace function checkacolytedates() returns trigger as
         maxdate date;
         maxenddate date;
     begin
+	IF ((SELECT COUNT(*) FROM priests WHERE laybrotherid = NEW.laybrotherid) >0)
+	THEN
+	 RETURN NULL;
+        END IF;
         maxdate = (select max(inaugurationdate) from acolytes where laybrotherid=NEW.laybrotherid);
         if(maxdate is not null)
             then maxenddate = (select enddate from acolytes where laybrotherid = NEW.laybrotherid);
