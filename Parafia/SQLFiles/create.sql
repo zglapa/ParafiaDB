@@ -1,13 +1,13 @@
 CREATE  TABLE "public".initializationsacramentstypes ( 
 	id                   serial  NOT NULL ,
-	sacramenttype        varchar(100)  NOT NULL ,
+	sacramenttype        varchar(100)  NOT NULL unique ,
 	CONSTRAINT pk_initializationsacramentstypes_id PRIMARY KEY ( id )
  );
 
 
 CREATE  TABLE "public".intentions ( 
 	id                   serial  NOT NULL ,
-	intention            varchar(100)  NOT NULL ,
+	intention            varchar(100)  NOT NULL unique ,
 	CONSTRAINT pk_intentions_id_0 PRIMARY KEY ( id )
  );
 
@@ -34,14 +34,14 @@ CREATE  TABLE "public".laybrothers (
  );
 CREATE  TABLE "public".masstypes ( 
 	id                   serial  NOT NULL ,
-	"type"               varchar(20)  NOT NULL ,
+	"type"               varchar(20)  NOT NULL unique ,
 	CONSTRAINT pk_masstypes_id UNIQUE ( id ) ,
 	CONSTRAINT pk_masstypes_id_0 PRIMARY KEY ( id )
  );
 
 CREATE  TABLE "public".meetingtypes ( 
 	id                   serial  NOT NULL ,
-	meetingtype          varchar(100)  NOT NULL ,
+	meetingtype          varchar(100)  NOT NULL unique ,
 	CONSTRAINT pk_meetingtypes_id_0 PRIMARY KEY ( id )
  );
 
@@ -75,7 +75,8 @@ CREATE  TABLE "public".acolytes (
 
 CREATE  TABLE "public".acolytesonmeetings ( 
 	acolyteid            int  NOT NULL ,
-	meetingid            int  NOT NULL 
+	meetingid            int  NOT NULL ,
+	CONSTRAINT acolytesonmeetings_unique UNIQUE (acolyteid,meetingid)
  );
 
 CREATE  TABLE "public".apostates ( 
@@ -89,7 +90,7 @@ CREATE  TABLE "public".apostates (
 
 
 CREATE  TABLE "public".excommunicated ( 
-	laybrotherid         int  NOT NULL ,
+	laybrotherid         int  NOT NULL unique ,
 	excommuniondate         date  NOT NULL ,
 	CONSTRAINT pk_excommunicated_id PRIMARY KEY ( laybrotherid ),
 	CHECK(excommuniondate<=current_date)
@@ -121,7 +122,8 @@ CREATE  TABLE "public".masses (
 
 CREATE  TABLE "public".priestsmasses ( 
 	priestid             int  NOT NULL ,
-	massid               int  NOT NULL 
+	massid               int  NOT NULL ,
+    CONSTRAINT priestsmasses_unq UNIQUE (priestid,massid)
  );
 
 CREATE  TABLE "public".deaths ( 
@@ -161,7 +163,8 @@ CREATE  TABLE "public".marriages (
 
 CREATE  TABLE "public".acolytesmasses ( 
 	acolyteid         int  NOT NULL ,
-	massid            int  NOT NULL 
+	massid            int  NOT NULL ,
+    CONSTRAINT acolytesmasses_unq UNIQUE (acolyteid,massid)
  );
 
 ALTER TABLE "public".acolytemeetings ADD CONSTRAINT fk_acolytemeetings_meetingtypes FOREIGN KEY ( meetingtype ) REFERENCES "public".meetingtypes( id );
@@ -2154,7 +2157,6 @@ VALUES
  (4, 27),
  (23, 27),
  (32, 27),
- (23, 27),
  (3, 27),
  (33, 28),
  (2, 28),
@@ -2243,7 +2245,6 @@ VALUES
  (742,370),
  (740,356),
  (743,375),
- (742,355),
  (744,375),
  (742,394),
  (744,355),
@@ -2379,7 +2380,6 @@ INSERT INTO acolytesonmeetings(
 (36,8),
 (49,1),
 (76,15),
-(3,10),
 (76,5),
 (82,7),
 (76,7),
@@ -2427,7 +2427,6 @@ INSERT INTO acolytesonmeetings(
 (76,5),
 (57,12),
 (90,2),
-(13,12),
 (36,5),
 (13,10),
 (76,15),
@@ -2459,7 +2458,6 @@ INSERT INTO acolytesonmeetings(
 (76,17),
 (36,20),
 (3,2),
-(90,2),
 (90,12);
 --======================================
 
